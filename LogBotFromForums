@@ -1,0 +1,390 @@
+//#! name = log harvester
+//#! tooltip = harvest log
+
+var actionTimeout = 1000 * 60 * 1;
+var hartling = jMyCoords();   
+var inventory = checkInventory();
+var player = jGetObjects(1,0,"borka");
+
+function checkInventory() {
+   if(!jHaveWindow("Inventory")) {
+      jToggleInventory();
+      while(!jHaveWindow("Inventory"))
+         jSleep(100);
+   }
+   return jGetWindow("Inventory").getInventories()[0];
+}
+
+function getNearestTree() {
+   var trees = jGetObjects(25, jCoord(0, 0), ["trees/fir", "trees/pine"]);
+   var min_len = 100500; var objid = 0;
+   for (var i = 0; i < trees.length; i++) {
+      if (trees[i].position().dist(jMyCoords()) < min_len) {
+         objid = trees[i];
+         min_len = trees[i].position().dist(jMyCoords());
+      }
+   }
+   return objid;
+}
+
+function harvest(){
+      var log = jFindObjectByName("log", 15).getID();
+      jSendAction("carry");
+      jWaitCursor("chi");
+      jDoClick(log, 1, 0);
+      jWaitMove();
+      jSendDoubleAction("theTrav", "village");
+      jWaitProgress(300000);
+      jMoveStep(jCoord(0, -2));
+      jWaitMove();
+      jAbsClick(jMyCoords(), 3, 0);
+      jWaitMove();
+      jPFMove(hartling);
+      waitPFEndMove();
+      jAbsClick(jMyCoords(), 1, 0);
+     jSendDoubleAction("theTrav", "hearth");
+   
+
+}   
+
+function tohearth() {
+   jSendDoubleAction("theTrav", "hearth");
+   jWaitProgress(300000);
+}
+
+function tovillage() {
+   drinkWine();
+   jSleep(500);
+   jSendDoubleAction("theTrav", "village");
+   jWaitProgress(300000);
+   }
+   
+function equipShovel() { // From axe
+   var equip = checkEquipment();
+   var shovel = inventory.getItems("shovel")[0];
+   if (!shovel) return;
+   if (equip.resName(6).indexOf("axe") >= 0) {
+      dropItem(shovel.coord().add(0, 2));
+      equip.takeAt(6);
+      jWaitDrag(actionTimeout);
+      inventory.drop(shovel.coord());
+      jSleep(1000);
+      waitDragName("shovel");
+      equip.dropTo(6);
+      jWaitDrop(actionTimeout);
+   }
+}   
+
+function equipAxe() { // From Shovel
+   var equip = checkEquipment();
+   var axe = inventory.getItems("axe")[0];
+   if (!axe) return;
+   if (equip.resName(6).indexOf("shovel") >= 0) {
+      dropItem(axe.coord().add(0, 2));
+      equip.takeAt(6);
+      jWaitDrag(actionTimeout);
+      inventory.drop(axe.coord());
+      jSleep(1000);
+      waitDragName("axe");
+      equip.dropTo(6);
+      jWaitDrop(actionTimeout);
+   }
+}   
+
+
+
+function takelog() {
+var log = jFindObjectByName("log", 50).getID();
+      jSendAction("carry");
+      jWaitCursor("chi");
+      jDoClick(log, 1, 0);
+      jWaitMove();
+     return;
+}
+
+function droplog() {
+      jAbsClick(jMyCoords(), 3, 0);
+      jWaitMove();
+     return;
+}
+
+function stumper(){
+   while(true){
+      jSleep(100);
+      jSetSpeed(1);
+      if(jGetStamina() < 40){
+         checkInventory();
+         var waterflask = jGetWindow("Inventory").getInventories()[0].getItems("waterflask")[0];
+         var bucket = jGetWindow("Inventory").getInventories()[0].getItems("bucket-water")[0];
+         var bucket_coord = bucket.coord();
+         bucket.take();
+         jWaitDrag(5000);
+         jSleep(200);
+         waterflask.itemact(0);
+         jSleep(200);
+         jGetWindow("Inventory").getInventories()[0].drop(bucket_coord);
+         jWaitDrop(5000);
+         jSleep(200);
+         waterflask.iact();
+         jWaitPopup(1000);
+         jSelectContextMenu("Drink");
+         jSleep(200);
+         jWaitEndProgress(10000);
+      } else {
+         var target_stump = jFindObjectByName("stump", 30);
+         jDoClick(target_stump.getID(), 3, 0);
+         jWaitPopup(1000);
+         jSelectContextMenu("Remove");
+         jWaitMove(20000);
+         jSleep(200);
+         jWaitEndProgress(65000);
+         jSleep(200);
+         jSleep(200);
+         return;
+      }
+   }
+   
+}
+   
+
+function travelCount() {
+   var buffs = jGetBuffs();
+   for (var i = 0; i < buffs.length; i++) {
+      if (buffs[i].name().indexOf("Travel Weariness") >= 0) {
+         return buffs[i].meter();
+      }
+   }
+   return 0;
+}
+   
+function _pf_click(id) {
+   if (!jIsPathFree(jGob(id))) {
+      resetCursor();
+      if (jPFClick(id) > 0) {
+         if (jWaitStartMove(1000)) {
+            waitPFEndMove();
+            while (jIsMoving() || jMyCoords().dist(jObjectPos(id)) > 33) {
+               jSleep(100);
+            }
+            return true;
+         }
+      }
+   }
+   return false;
+}
+
+function resetCursor() {
+   if (!jIsCursor("arw")) {
+      jAbsClick(jCoord(0, 0), 3, 0);
+      jWaitCursor("arw", actionTimeout);
+   }
+}
+
+function waitPFEndMove() {
+   while (true) {
+      jWaitEndMove();
+      jSleep(500);
+      if (!jIsMoving()) {
+         return;
+      }
+   }
+}
+   
+function treecutter() {
+         var target_tree = jFindObjectByName("fur06", 30);
+         jDoClick(target_tree, 3, 0);
+         jWaitPopup(1000);
+         jSelectContextMenu("chop");
+         jWaitMove(20000);
+         jSleep(200);
+         jWaitEndProgress(65000);
+         jSleep(200);
+         
+      }
+
+function walktotree() {
+         jPFMove (getNearestTree().getID() );
+         waitPFEndMove();
+         return;}
+      
+function cuttree() {
+         jDoClick(getNearestTree().getID(), 3, 0);
+         jWaitPopup(3000);
+         jSelectContextMenu("Chop");
+         jWaitMove(20000);
+         jSleep(200);
+         jWaitEndProgress(65000);
+         jSleep(200);
+         return;}
+         
+         
+function treecutter2() {
+      var trees = jGetObjects(25, jCoord(0, 0), ["trees/fir", "trees/pine", "trees/yew", "trees/birch", "trees/oak",]);
+      var min_len = 100500; 
+      var target_tree = 0;
+      for (var i = 0; i < trees.length; i++) {
+      if (jObjectPos(trees[i]).dist(jMyCoords()) < min_len) {
+         objid = trees[i];
+         min_len = jObjectPos(trees[i]).dist(jMyCoords());
+      }
+   }
+         jDoClick(target_tree, 3, 0);
+         jWaitPopup(1000);
+         jSelectContextMenu("chop");
+         jWaitMove(20000);
+         jSleep(200);
+         jWaitEndProgress(65000);
+         jSleep(200);
+      }
+      
+      
+function dropblock() {
+         checkInventory();
+         var inventory_wood = jGetWindow("Inventory").getInventories()[0].getItems("wood");
+         for(var i in inventory_wood){
+               if(inventory_wood[i] == 0){
+                  break;
+               }
+               inventory_wood[i].drop();
+               jSleep(200);
+         }
+   }
+      
+function drinkWater() {
+   if (jGetStamina() > 80) return;
+   inventory = checkInventory();
+   var buckets = inventory.getItems("bucket-water");
+   if (buckets.length > 0) {
+      inventory.sortItems(buckets, "amount", false);
+      var bucket = buckets[0];
+      var bucket_coord = bucket.coord();
+      if (bucket.isActual()) {
+         bucket.take();
+         jWaitDrag();
+         var flasks = inventory.getItems("waterflask", "waterskin");
+         if (flasks.length > 0) {
+            var flask = flasks[0];
+            if (flask.isActual()) {
+               flask.itemact(0);
+               jSleep(500);
+               inventory.drop(bucket_coord);
+               jWaitDrop();
+            }
+         }
+      }
+   }
+ var flasks = inventory.getItems("waterflask", "waterskin");
+   if (flasks.length > 0) {
+      var flask = flasks[0];
+      if (flask.isActual()) {
+         flask.iact();
+         if (jWaitPopup(actionTimeout)) {
+            jSelectContextMenu("Drink");
+            jWaitProgress();
+         } else {
+            // No water
+            stopFlag = true;
+         }
+      }
+   }
+}   
+   
+function drinkWine() {
+   if (travelCount() < 60) return;
+   inventory = checkInventory();
+   var buckets = inventory.getItems("bucket-wine");
+   if (buckets.length > 0) {
+      inventory.sortItems(buckets, "amount", false);
+      var bucket = buckets[0];
+      var bucket_coord = bucket.coord();
+      if (bucket.isActual()) {
+         bucket.take();
+         jWaitDrag();
+         var flasks = inventory.getItems("glass-winee");
+         if (flasks.length > 0) {
+            var flask = flasks[0];
+            if (flask.isActual()) {
+               flask.itemact(0);
+               jSleep(500);
+               inventory.drop(bucket_coord);
+               jWaitDrop();
+            }
+         }
+      }
+   }
+   var flasks = inventory.getItems("glass-winef");
+   if (flasks.length > 0) {
+      var flask = flasks[0];
+      if (flask.isActual()) {
+         flask.iact();
+         if (jWaitPopup(actionTimeout)) {
+         jSleep(500)
+            jSelectContextMenu("Drink");
+            jWaitProgress();
+         } else {
+            // No water
+            stopFlag = true;
+         }
+      }
+   }
+}
+
+function main2() {
+   tohearth();
+   jSleep(500);
+   equipAxe();
+   jSleep(500);
+   drinkWater();
+   jSleep(500);
+   treecutter();
+   jSleep(500);
+   equipShovel();
+   jSleep(500);
+   stumper();
+   jSleep(500);
+   takelog();
+   jSleep(500);
+   tovillage();
+   jSleep(500);
+   droplog();
+   }
+   
+function main() {
+      //walktotree();
+      //jSleep(500);
+      cuttree();
+      jSleep(500);
+      drinkWater()
+      jSleep(500);
+      stumper();
+      jSleep(500);
+      drinkWine();
+      jSleep(500)
+      takelog();
+      jSleep(500);
+      tovillage();
+      jSleep(500);
+      droplog();
+      jSleep(500);
+      tohearth();
+      jSleep(500);
+      takelog()
+      jSleep(500);
+      drinkWine();
+      jSleep(500);
+      tovillage();
+      jSleep(500);
+      dropblock();
+      jSleep(500);
+      droplog();
+      jSleep(500)
+      if (jGetHungry() < 55) {return;}
+      else {
+      tohearth();
+      loop();}
+   
+   }
+
+function loop() {
+   main();}
+main();

@@ -1,0 +1,428 @@
+//#! name = OMG THIS SUSAVAGE
+ 
+var ACCNAME = "accname";         //account name
+var CHARNAME = "charname";   //character name
+include("jBotAPI");
+inventory = checkInventory();
+jDropLastWindow();
+GetRoute();
+var startPos = jMyCoords();
+var route = [];
+var CurioName = ["pearl","flotsam","itsybitsy","itsyweb"];
+function GetRoute() {
+   var startPos = jMyCoords();
+   var route = [];
+//MY COORDS, REWRITE IT
+   route[0] = jCoord(startPos.x+320,startPos.y);
+   route[1] = jCoord(route[0].x+320,route[0].y);
+   route[2] = jCoord(route[1].x+220,route[1].y-210);
+   route[3] = jCoord(route[2].x,route[2].y-320);
+   route[4] = jCoord(route[3].x+150,route[3].y-260);
+   route[5] = jCoord(route[4].x+150,route[4].y-250);
+   route[6] = jCoord(route[5].x+210,route[5].y-180);
+   route[7] = jCoord(route[6].x+280,route[6].y+110);
+   route[8] = jCoord(route[7].x+250,route[7].y+150);
+   route[9] = jCoord(route[8].x+230,route[8].y+200);
+   route[10] = jCoord(route[9].x+250,route[9].y+270);
+   route[11] = jCoord(route[10].x+250,route[10].y+270);
+   route[12] = jCoord(route[11].x+250,route[11].y+230);
+   route[13] = jCoord(route[12].x+250,route[12].y+200);
+   route[14] = jCoord(route[13].x+250,route[13].y);
+   route[15] = jCoord(route[14].x+250,route[14].y+390);
+   route[16] = jCoord(route[15].x+150,route[15].y+250);
+   route[17] = jCoord(route[16].x+70,route[16].y+250);
+   route[18] = jCoord(route[17].x+70,route[17].y+250);
+   route[19] = jCoord(route[18].x+70,route[18].y+250);
+   route[20] = jCoord(route[19].x,route[19].y+250);
+   route[21] = jCoord(route[20].x+150,route[20].y+250);
+   route[22] = jCoord(route[21].x+210,route[21].y-60);
+   route[23] = jCoord(route[22].x+200,route[22].y+100);
+   route[24] = jCoord(route[23].x,route[23].y-250);
+   route[25] = jCoord(route[24].x,route[24].y-250);
+   route[26] = jCoord(route[25].x,route[25].y-250);
+   route[27] = jCoord(route[26].x,route[26].y-250);
+   route[28] = jCoord(route[27].x,route[27].y-470);
+   route[29] = jCoord(route[28].x-200,route[28].y-350);
+   route[30] = jCoord(route[29].x-380,route[29].y-170);
+   route[31] = jCoord(route[30].x-250,route[30].y-200);
+   route[32] = jCoord(route[31].x-250,route[31].y-200);
+   route[33] = jCoord(route[32].x-150,route[32].y-260);
+   route[34] = jCoord(route[33].x-150,route[33].y-260);
+   route[35] = jCoord(route[34].x-190,route[34].y-280);
+   route[36] = jCoord(route[35].x-200,route[35].y-230);
+   route[37] = jCoord(route[36].x-230,route[36].y-160);
+   route[38] = jCoord(route[37].x-230,route[37].y-90);
+   route[39] = jCoord(route[38].x-230,route[38].y-110);
+   route[40] = jCoord(route[39].x-230,route[39].y-110);
+   route[41] = jCoord(route[40].x-230,route[40].y-110);
+   route[42] = jCoord(route[41].x-230,route[41].y-60);
+   route[43] = jCoord(route[42].x-230,route[42].y-60);
+   route[44] = jCoord(route[43].x-230,route[43].y+140);
+   route[45] = jCoord(route[44].x-230,route[44].y+270);
+   route[46] = jCoord(route[45].x-230,route[45].y+270);
+   route[47] = jCoord(route[46].x-230,route[46].y+300);
+   route[48] = jCoord(route[47].x-100,route[47].y+280);
+   route[49] = jCoord(route[48].x,route[48].y+410);
+   route[50] = jCoord(route[49].x-100,route[49].y+200);
+   route[51] = jCoord(route[50].x-50,route[50].y+110);
+   return route;
+}
+
+function whereYouLoggedOut() {
+   jLogin(ACCNAME);
+   while(!jHaveCharlist()) jSleep(700);
+   jPrint(jSelectChar(CHARNAME));
+   var logwnd = jWaitNewWindow(CHARNAME, 120000);
+   jSleep(100);
+   logwnd.pushButton(2);
+}
+
+function Relogin() {
+   jLogout();
+}
+
+ function PreviousCoord(Coord) {
+   if (jMyCoords()==Coord) return;
+   jAbsClick(Coord, 1, 0);
+   jWaitStartMove();
+   while (jMyCoords().dist(Coord) > 10) jSleep(200); 
+}
+ 
+function NewArrayWithout1stElement(arr) {
+   newarr = [];
+   for (var i = 1; i < arr.length; i++) {
+   newarr[i-1] = arr[i];
+   }
+return newarr;
+}
+
+
+ function GetStuff() {
+   var Stuff = jGetObjects(400,jCoord(0,0),"mussel");
+   StartCoord = jMyCoords();
+   while ((inventory.freeSlots() > 3)&&(Stuff.length>0)) {
+      AwayFromGround();
+      jPrint(Stuff.length);
+      Stuff[0].doClick(3,0);
+      jWaitPopup();
+      jSelectPopupMenu("Pick");
+      jWaitMove(6000);
+      jWaitProgress(10000);
+      Stuff = NewArrayWithout1stElement(Stuff);
+   }   
+   Stuff = jGetObjects(400,jCoord(0,0),"flotsam");
+   if (Stuff.length>0) {
+      AwayFromGround();
+      Stuff[0].doClick(3,0);
+      jWaitPopup();
+      jSelectPopupMenu("Pick");
+      jWaitMove(6000);
+      jWaitProgress(10000);
+   }
+   AwayFromGround();
+   PreviousCoord(StartCoord);
+}
+
+
+function GoHome () {
+   jOffsetClick (jCoord(-3,0),1,2);
+   jSleep (500);
+   jSendDoubleAction("theTrav", "hearth");
+   jWaitProgress(300000);
+}
+
+function checkInventory() {
+   if(!jHaveWindow("Inventory")) {
+      jToggleInventory();
+      while(!jHaveWindow("Inventory")) jSleep(100);
+   }
+   return jGetWindow("Inventory").getInventories()[0];
+}
+
+
+function goToCauldron () {
+   var cauldron = jFindObjectByName("cauldron",20);
+   var offs = cauldron.position();
+   offs = offs.add(0, -10);
+   jPFMove(offs);
+   jWaitStartMove();
+   while (jIsMoving() || jMyCoords().dist(offs) > 10) jSleep(200);
+   return cauldron; 
+}
+
+function checkCauldron () {
+   var cauldron = jFindObjectByName("cauldron",20);
+   if(!jHaveWindow("Cauldron")) {
+      jDoClick(cauldron.getID(), 3, 0);
+      while(!jHaveWindow("Cauldron"))
+      jSleep(100);
+   }
+   var waterInCauldron = jGetWindow("Cauldron").getMeterValue(1);
+   var fuelInCauldron = jGetWindow("Cauldron").getMeterValue(2);
+   water = waterInCauldron;
+   fuel = fuelInCauldron;
+   return water, fuel;
+}
+
+function goToBarrel() {
+   var barrel = jFindObjectByName("barrel",20);
+   var offs = barrel.position();
+   offs = offs.add(10, 0);
+   jPFMove(offs);
+   jWaitStartMove();
+   while (jIsMoving() || jMyCoords().dist(offs) > 10) jSleep(200);
+   return barrel; 
+}
+
+function getWater () {
+   inventory = checkInventory();
+   barrel = goToBarrel();
+   goToBarrel();
+   var bucket = inventory.getItems("buckete")[0];
+   var bucket_coord = bucket.coord()
+   var bucket_name = bucket.resName();
+   bucket.take();
+   jWaitDrag();
+   barrel.interactClick(0);
+   while (jGetDraggingItem().resName() == bucket_name) jSleep(100);
+   cauldron = goToCauldron (); 
+   goToCauldron ();
+   cauldron.interactClick(0);
+   while (jGetDraggingItem().resName() !== bucket_name) jSleep(100);
+   inventory.drop(bucket_coord);
+   jWaitDrop();
+}
+
+function getBranch() {
+   var inventory = checkInventory();
+   var open_cupboard = jGetWindow("Cupboard").getInventories()[0]; 
+   var branch = open_cupboard.getItems("invobjs/branch");
+   if (branch.length > 0) {
+      for (var i = 0; i < 2; i++) {
+         var open_cupboard = jGetWindow("Cupboard").getInventories()[0]; 
+         var branch = open_cupboard.getItems("invobjs/branch");
+         branch[i].transfer();
+         jSleep(200);
+      }
+   }
+}
+
+
+function getFuel () {
+   inventory = checkInventory();
+   var cupboards = jGetObjects(50, jCoord(0, 0), "terobjs/cupboard");
+   for (var i = 0; i < cupboards.length; i++) {
+      var fuelInInventory = inventory.getItems("invobjs/branch");
+      if (fuelInInventory.length != 2) {
+         var offs = cupboards[i].position();
+         offs = offs.add(10, 0);
+         jPFMove(offs);
+         jWaitStartMove();
+         while (jIsMoving() || jMyCoords().dist(offs) > 10) jSleep(200);
+         jDoClick(cupboards[i].getID(),3,0);
+         jSleep(1000);
+         var open_cupboard = jGetWindow("Cupboard");
+         getBranch();
+         jSleep(1000);
+      }
+   }
+   goToCauldron ();
+   for (var i = 0; i < 2; i++) {
+      cauldron = goToCauldron ();
+      var branch = inventory.getItems("branch")[0];
+      branch.take();
+      jWaitDrag();
+      cauldron.interactClick(0);
+      jSleep(1000);
+   }
+}
+
+function boilingMussel () {
+   var cauldron = jFindObjectByName("cauldron",20);
+   var musselInInventory = inventory.getItems("invobjs/mussel");
+   inventory = checkInventory();
+   if(!jHaveWindow("Cauldron")) {
+      jDoClick(cauldron.getID(), 3, 0);
+      while(!jHaveWindow("Cauldron")) jSleep(100);
+   }
+   jGetWindow("Cauldron").pushButton("Light");
+   jSleep (500);
+   jSendDoubleAction("craft","cmussel");
+   jWaitCraft();
+   while (musselInInventory.length > 0) {
+      jCraftItem(false);
+      jWaitProgress();
+      var boiledMusselInInventory = inventory.getItems("invobjs/mussel-boiled");
+      if (boiledMusselInInventory.length > 0) {
+         boiledMusselInInventory[0].drop();
+         jWaitDrop();
+      }
+      musselInInventory = inventory.getItems("invobjs/mussel");
+   }
+   jSendAction("carry");
+   jSleep (500);
+   jDoClick(cauldron.getID(), 1, 0);
+   jSleep (1000);
+   jOffsetClick(jCoord(0,-1), 1, 0);
+   jSleep (1000);
+   jOffsetClick(jCoord(0,2), 3, 0);
+   jSleep (1000);
+}
+
+function GoDrinkWine() {
+   door = jFindObjectByName("cabin-door2",100);
+   doorCoord = door.position();
+   doorAround = jCoord(doorCoord.x-10,doorCoord.y);
+   jPFMove(doorAround);
+        waitPFEndMove();
+   while (jIsMoving() || jMyCoords().dist(doorAround) > 10) jSleep(100);
+   door.doClick(3,0);
+   jWaitMove();
+   jSleep(500);
+   basket = jFindObjectByName("birchbasket",100);
+   basketCoord = basket.position();
+   basketAround =jCoord(basketCoord.x+10,basketCoord.y);
+   jPFMove(basketAround);
+   waitPFEndMove();
+   while (jIsMoving() || jMyCoords().dist(basketAround) > 2) jSleep(100);
+   basket.doClick(3,0);
+   while(!jHaveWindow("Basket")) jSleep(100);
+   BasketInventory = jGetWindow("Basket").getInventories()[0];
+   var buckets = BasketInventory.getItems("bucket-wine");
+   if (buckets.length > 0) {
+      BasketInventory.sortItems(buckets, "amount", false);
+      var bucket = buckets[0];
+      var bucket_coord = bucket.coord();
+      if (bucket.isActual()) {
+         bucket.take();
+         jWaitDrag();
+         var glasses = BasketInventory.getItems("glass");
+         if (glasses.length > 0) {
+            var glass = glasses[0];
+            if (glass.isActual()) {
+               glass.itemact(0);
+               jSleep(500);
+               BasketInventory.drop(bucket_coord);
+               jWaitDrop();
+            }
+         }
+      }
+   }
+   var glasses = BasketInventory.getItems("glass");
+   if (glasses.length > 0) {
+      var glass = glasses[0];
+      if (glass.isActual()) {
+         glass.iact();
+         if (jWaitPopup(actionTimeout)) {
+            jSelectContextMenu("Drink");
+            jWaitProgress();
+         }
+      }
+   }
+}
+
+function DropCurioToChest() {
+   chest = jFindObjectByName("cclosed",100);
+   chestCoord = chest.position();
+   chestAround =jCoord(chestCoord.x,chestCoord.y+10);
+   jPFMove(chestAround);
+   waitPFEndMove();
+   while (jIsMoving() || jMyCoords().dist(chestAround) > 10) jSleep(100);
+   chest.doClick(3,0);
+   while(!jHaveWindow("Chest")) jSleep(100);
+   while (inventory.getItems(CurioName).length > 0) {
+      inventory.getItems(CurioName)[0].transferSuchAll();
+      jSleep(500);
+   }
+}
+
+function GoToBoat() {
+   var cross = jFindObjectByName("crossroads",100);
+   var crossCoord = cross.position();
+   var crossAround =jCoord(crossCoord.x+10,crossCoord.y);
+   jPFMove(crossAround);
+   waitPFEndMove();
+   while (jIsMoving() || jMyCoords().dist(crossAround) > 2) jSleep(100);
+   cross.doClick(3,0);
+   while(!jHaveWindow("Yoitsu")) jSleep(100);
+   jGetWindow("Yoitsu").pushButton(1);
+   jSleep(4000);
+   
+   AwayFromCross();
+   boat = jFindObjectByName("boat",100);
+   boatCoord = boat.position();
+   boatAround =jCoord(boatCoord.x-20,boatCoord.y);
+   jPFMove(boatAround);
+   while (jIsMoving() || jMyCoords().dist(boatAround) > 10) jSleep(100);
+   boat.doClick(3,0);
+   jSleep(2000);
+   jSelectPopupMenu("Avast!");
+   jWaitMove();
+}
+
+function AwayFromCross() {
+   Cross = jFindObjectByName("crossroads",100);
+   CrossCoord = Cross.position();
+   MyCoord = jMyCoords();
+   CrossAroundN = jCoord(CrossCoord.x,CrossCoord.y-10);
+   CrossAroundE = jCoord(CrossCoord.x+10,CrossCoord.y);
+   CrossAroundS = jCoord(CrossCoord.x,CrossCoord.y+10);
+   CrossAroundW = jCoord(CrossCoord.x-10,CrossCoord.y);
+   DistN = MyCoord.dist(CrossAroundN);
+   DistE = MyCoord.dist(CrossAroundE);
+   DistS = MyCoord.dist(CrossAroundS);
+   DistW = MyCoord.dist(CrossAroundW);
+   DistMin = DistN;
+   CoordDistMin = CrossAroundN;
+   if (DistE < DistMin){ DistMin = DistE; CoordDistMin = CrossAroundE; }
+   if (DistS < DistMin){ DistMin = DistS; CoordDistMin = CrossAroundS; }
+   if (DistW < DistMin){ DistMin = DistW; CoordDistMin = CrossAroundW; }
+   jAbsClick(CoordDistMin, 1, 0);
+   jWaitMove();
+}
+
+function isTileGround(coord) {
+   if (!(jGetTileType(coord) == 0 || jGetTileType(coord) == 1)) return true
+   else return false;
+}
+
+function AwayFromGround() {
+   if (!((isTileGround(jCoord(0,-1))) || (isTileGround(jCoord(1,0))) || (isTileGround(jCoord(0,1))) || (isTileGround(jCoord(-1,0))))) return;
+   var offs = jMyCoords();
+   if (isTileGround(jCoord(0,-1))) offs = offs.add(0,20);
+   if (isTileGround(jCoord(1,0))) offs = offs.add(-20,0);
+   if (isTileGround(jCoord(0,1))) offs = offs.add(0,-20);
+   if (isTileGround(jCoord(-1,0))) offs = offs.add(20,0);
+   jAbsClick(offs, 1, 0);
+   jWaitStartMove();
+   jSleep(500);
+}
+
+ function main() {
+   while (1) {
+      route = GetRoute();
+      for(var i = 0; i < route.length; i++) {
+         GetStuff();
+         PreviousCoord(route[i]);
+         if(jGetStamina() < 50) drinkWater();
+      }
+      jSleep(1000);
+      GoHome ();
+      jSleep(1000);
+      goToCauldron ();
+      checkCauldron ();
+      if (water < 33) {
+         getWater();
+      }
+      if (fuel < 13) {
+         getFuel();
+      }
+      boilingMussel ();
+      DropCurioToChest();
+      jSleep(660000);
+      GoDrinkWine();
+      GoToBoat();
+   }
+}
+ 
+main();

@@ -1,0 +1,61 @@
+//#! name = koord maker
+var scriptName="koord"
+var out = new java.io.BufferedWriter(new java.io.FileWriter("scripts/" + scriptName + ".jbot", true));
+out.write("//#! name = " + scriptName);out.newLine();
+
+
+
+function main() {
+   jDropLastWindow();
+   var blist = ["Set Coord", "Exit"];
+   var selectWindow = jGUIWindow(jCoord(250, 250), jCoord(110, blist.length * 25 + 15), "Position Setting");
+   var label = jGUILabel(selectWindow, jCoord(5, 5), "Stand on point of route and push button");
+      for(var i = 0; i < blist.length; i++)
+            jGUIButton(selectWindow, jCoord(5, 25 + i*25),  100, blist[i]);
+      selectWindow.toggleCloseButton();
+
+
+
+      var btext = selectWindow.waitButtonClick();
+   if(btext == blist[0]) {   
+      var PastPlace = jMyCoords();
+      out.write("var startPos = jMyCoords();");out.newLine();
+      out.write("var route = [];");out.newLine();
+   }
+   if(btext == blist[blist.length - 1]) {out.close(); selectWindow.destroy(); return;}
+   
+
+
+
+
+   var btext = selectWindow.waitButtonClick();
+   if(btext == blist[0]) {   
+      var difX = jMyCoords().x - PastPlace.x;
+      var difY = jMyCoords().y - PastPlace.y;
+      out.write("route[0] = jCoord(startPos.x+"+difX+",startPos.y+"+difY+");");out.newLine();
+      PastPlace = jMyCoords();
+   }
+   if(btext == blist[blist.length - 1]) {out.close(); selectWindow.destroy(); return;}
+   
+
+
+
+
+
+   var routeNum = 1;
+   while(1){
+      btext = selectWindow.waitButtonClick();
+      difX = jMyCoords().x - PastPlace.x;
+      difY = jMyCoords().y - PastPlace.y;
+      if(btext == blist[0]) {   
+         out.write("route["+routeNum+"] = jCoord(route["+(routeNum-1)+"].x+"+difX+",route["+(routeNum-1)+"].y+"+difY+");");out.newLine();
+         routeNum++;
+         var PastPlace = jMyCoords();      
+      }
+      if(btext == blist[blist.length - 1]) {out.close(); selectWindow.destroy(); return;}
+   }
+   out.close();
+}
+
+
+main();

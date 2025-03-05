@@ -1,0 +1,271 @@
+//#! name = Mountain
+ 
+var ACCNAME = "susavage";         //account name
+var CHARNAME = "claimed your soul";   //character name
+include("jBotAPI");
+inventory = checkInventory();
+jDropLastWindow();
+GetStartPos();
+var startPos = jMyCoords();
+var route = [];
+function GetStartPos() {
+   var startPos = jMyCoords();
+   var route = [];
+route[0] = jCoord(startPos.x+-89,startPos.y+119);
+route[1] = jCoord(route[0].x+-1,route[0].y+199);
+route[2] = jCoord(route[1].x+-8,route[1].y+272);
+route[3] = jCoord(route[2].x+-88,route[2].y+114);
+route[4] = jCoord(route[3].x+94,route[3].y+72);
+route[5] = jCoord(route[4].x+-8,route[4].y+141);
+route[6] = jCoord(route[5].x+-117,route[5].y+62);
+route[7] = jCoord(route[6].x+10,route[6].y+168);
+route[8] = jCoord(route[7].x+53,route[7].y+263);
+route[9] = jCoord(route[8].x+-120,route[8].y+140);
+route[10] = jCoord(route[9].x+-210,route[9].y+166);
+route[11] = jCoord(route[10].x+-211,route[10].y+165);
+route[12] = jCoord(route[11].x+-261,route[11].y+-1);
+route[13] = jCoord(route[12].x+-229,route[12].y+151);
+route[14] = jCoord(route[13].x+-129,route[13].y+271);
+route[15] = jCoord(route[14].x+-52,route[14].y+226);
+route[16] = jCoord(route[15].x+17,route[15].y+157);
+route[17] = jCoord(route[16].x+269,route[16].y+219);
+route[18] = jCoord(route[17].x+76,route[17].y+-100);
+route[19] = jCoord(route[18].x+109,route[18].y+0);
+route[20] = jCoord(route[19].x+12,route[19].y+349);
+route[21] = jCoord(route[20].x+-8,route[20].y+222);
+route[22] = jCoord(route[21].x+55,route[21].y+299);
+route[23] = jCoord(route[22].x+178,route[22].y+328);
+route[24] = jCoord(route[23].x+144,route[23].y+110);
+route[25] = jCoord(route[24].x+29,route[24].y+189);
+route[26] = jCoord(route[25].x+232,route[25].y+252);
+route[27] = jCoord(route[26].x+250,route[26].y+128);
+route[28] = jCoord(route[27].x+188,route[27].y+214);
+route[29] = jCoord(route[28].x+37,route[28].y+157);
+route[30] = jCoord(route[29].x+161,route[29].y+161);
+route[31] = jCoord(route[30].x+236,route[30].y+100);
+route[32] = jCoord(route[31].x+284,route[31].y+34);
+route[33] = jCoord(route[32].x+-3,route[32].y+-149);
+route[34] = jCoord(route[33].x+110,route[33].y+-26);
+route[35] = jCoord(route[34].x+210,route[34].y+174);
+route[36] = jCoord(route[35].x+145,route[35].y+41);
+route[37] = jCoord(route[36].x+-22,route[36].y+-118);
+route[38] = jCoord(route[37].x+240,route[37].y+44);
+route[39] = jCoord(route[38].x+220,route[38].y+-22);
+route[40] = jCoord(route[39].x+244,route[39].y+12);
+route[41] = jCoord(route[40].x+149,route[40].y+-88);
+route[42] = jCoord(route[41].x+156,route[41].y+-55);
+route[43] = jCoord(route[42].x+-67,route[42].y+-225);
+route[44] = jCoord(route[43].x+-327,route[43].y+-183);
+route[45] = jCoord(route[44].x+198,route[44].y+-126);
+route[46] = jCoord(route[45].x+-67,route[45].y+-185);
+route[47] = jCoord(route[46].x+99,route[46].y+-231);
+route[48] = jCoord(route[47].x+297,route[47].y+-95);
+route[49] = jCoord(route[48].x+33,route[48].y+-353);
+route[50] = jCoord(route[49].x+-69,route[49].y+-233);
+route[51] = jCoord(route[50].x+-40,route[50].y+-298);
+route[52] = jCoord(route[51].x+13,route[51].y+-219);
+route[53] = jCoord(route[52].x+-305,route[52].y+1);
+route[54] = jCoord(route[53].x+-6,route[53].y+230);
+route[55] = jCoord(route[54].x+-288,route[54].y+-74);
+route[56] = jCoord(route[55].x+-202,route[55].y+-286);
+route[57] = jCoord(route[56].x+41,route[56].y+-417);
+route[58] = jCoord(route[57].x+-65,route[57].y+-309);
+route[59] = jCoord(route[58].x+-245,route[58].y+-93);
+route[60] = jCoord(route[59].x+-102,route[59].y+-180);
+route[61] = jCoord(route[60].x+70,route[60].y+-92);
+route[62] = jCoord(route[61].x+152,route[61].y+-8);
+route[63] = jCoord(route[62].x+-50,route[62].y+-78);
+route[64] = jCoord(route[63].x+-226,route[63].y+-32);
+route[65] = jCoord(route[64].x+15,route[64].y+-245);
+route[66] = jCoord(route[65].x+-222,route[65].y+-284);
+route[67] = jCoord(route[66].x+197,route[66].y+1);
+route[68] = jCoord(route[67].x+202,route[67].y+-176);
+route[69] = jCoord(route[68].x+282,route[68].y+22);
+route[70] = jCoord(route[69].x+34,route[69].y+124);
+route[71] = jCoord(route[70].x+281,route[70].y+9);
+route[72] = jCoord(route[71].x+290,route[71].y+10);
+route[73] = jCoord(route[72].x+-51,route[72].y+-135);
+route[74] = jCoord(route[73].x+229,route[73].y+-219);
+route[75] = jCoord(route[74].x+-11,route[74].y+-333);
+route[76] = jCoord(route[75].x+-215,route[75].y+-153);
+route[77] = jCoord(route[76].x+-357,route[76].y+3);
+route[78] = jCoord(route[77].x+-281,route[77].y+-99);
+route[79] = jCoord(route[78].x+-169,route[78].y+-9);
+route[80] = jCoord(route[79].x+-87,route[79].y+9);
+route[81] = jCoord(route[80].x+-13,route[80].y+259);
+route[82] = jCoord(route[81].x+-175,route[81].y+47);
+route[83] = jCoord(route[82].x+-103,route[82].y+79);
+route[84] = jCoord(route[83].x+-91,route[83].y+1);
+   return route;
+}
+
+function AnotherStartPos() {
+   var startPos = jCoord(jMyCoords().x-2400,jMyCoords().y-980);
+   var route = [];
+route[0] = jCoord(startPos.x+-89,startPos.y+119);
+route[1] = jCoord(route[0].x+-1,route[0].y+199);
+route[2] = jCoord(route[1].x+-8,route[1].y+272);
+route[3] = jCoord(route[2].x+-88,route[2].y+114);
+route[4] = jCoord(route[3].x+94,route[3].y+72);
+route[5] = jCoord(route[4].x+-8,route[4].y+141);
+route[6] = jCoord(route[5].x+-117,route[5].y+62);
+route[7] = jCoord(route[6].x+10,route[6].y+168);
+route[8] = jCoord(route[7].x+53,route[7].y+263);
+route[9] = jCoord(route[8].x+-120,route[8].y+140);
+route[10] = jCoord(route[9].x+-210,route[9].y+166);
+route[11] = jCoord(route[10].x+-211,route[10].y+165);
+route[12] = jCoord(route[11].x+-261,route[11].y+-1);
+route[13] = jCoord(route[12].x+-229,route[12].y+151);
+route[14] = jCoord(route[13].x+-129,route[13].y+271);
+route[15] = jCoord(route[14].x+-52,route[14].y+226);
+route[16] = jCoord(route[15].x+17,route[15].y+157);
+route[17] = jCoord(route[16].x+269,route[16].y+219);
+route[18] = jCoord(route[17].x+76,route[17].y+-100);
+route[19] = jCoord(route[18].x+109,route[18].y+0);
+route[20] = jCoord(route[19].x+12,route[19].y+349);
+route[21] = jCoord(route[20].x+-8,route[20].y+222);
+route[22] = jCoord(route[21].x+55,route[21].y+299);
+route[23] = jCoord(route[22].x+178,route[22].y+328);
+route[24] = jCoord(route[23].x+144,route[23].y+110);
+route[25] = jCoord(route[24].x+29,route[24].y+189);
+route[26] = jCoord(route[25].x+232,route[25].y+252);
+route[27] = jCoord(route[26].x+250,route[26].y+128);
+route[28] = jCoord(route[27].x+188,route[27].y+214);
+route[29] = jCoord(route[28].x+37,route[28].y+157);
+route[30] = jCoord(route[29].x+161,route[29].y+161);
+route[31] = jCoord(route[30].x+236,route[30].y+100);
+route[32] = jCoord(route[31].x+284,route[31].y+34);
+route[33] = jCoord(route[32].x+-3,route[32].y+-149);
+route[34] = jCoord(route[33].x+110,route[33].y+-26);
+route[35] = jCoord(route[34].x+210,route[34].y+174);
+route[36] = jCoord(route[35].x+145,route[35].y+41);
+route[37] = jCoord(route[36].x+-22,route[36].y+-118);
+route[38] = jCoord(route[37].x+240,route[37].y+44);
+route[39] = jCoord(route[38].x+220,route[38].y+-22);
+route[40] = jCoord(route[39].x+244,route[39].y+12);
+route[41] = jCoord(route[40].x+149,route[40].y+-88);
+route[42] = jCoord(route[41].x+156,route[41].y+-55);
+route[43] = jCoord(route[42].x+-67,route[42].y+-225);
+route[44] = jCoord(route[43].x+-327,route[43].y+-183);
+route[45] = jCoord(route[44].x+198,route[44].y+-126);
+route[46] = jCoord(route[45].x+-67,route[45].y+-185);
+route[47] = jCoord(route[46].x+99,route[46].y+-231);
+route[48] = jCoord(route[47].x+297,route[47].y+-95);
+route[49] = jCoord(route[48].x+33,route[48].y+-353);
+route[50] = jCoord(route[49].x+-69,route[49].y+-233);
+route[51] = jCoord(route[50].x+-40,route[50].y+-298);
+route[52] = jCoord(route[51].x+13,route[51].y+-219);
+route[53] = jCoord(route[52].x+-305,route[52].y+1);
+route[54] = jCoord(route[53].x+-6,route[53].y+230);
+route[55] = jCoord(route[54].x+-288,route[54].y+-74);
+route[56] = jCoord(route[55].x+-202,route[55].y+-286);
+route[57] = jCoord(route[56].x+41,route[56].y+-417);
+route[58] = jCoord(route[57].x+-65,route[57].y+-309);
+route[59] = jCoord(route[58].x+-245,route[58].y+-93);
+route[60] = jCoord(route[59].x+-102,route[59].y+-180);
+route[61] = jCoord(route[60].x+70,route[60].y+-92);
+route[62] = jCoord(route[61].x+152,route[61].y+-8);
+route[63] = jCoord(route[62].x+-50,route[62].y+-78);
+route[64] = jCoord(route[63].x+-226,route[63].y+-32);
+route[65] = jCoord(route[64].x+15,route[64].y+-245);
+route[66] = jCoord(route[65].x+-222,route[65].y+-284);
+route[67] = jCoord(route[66].x+197,route[66].y+1);
+route[68] = jCoord(route[67].x+202,route[67].y+-176);
+route[69] = jCoord(route[68].x+282,route[68].y+22);
+route[70] = jCoord(route[69].x+34,route[69].y+124);
+route[71] = jCoord(route[70].x+281,route[70].y+9);
+route[72] = jCoord(route[71].x+290,route[71].y+10);
+route[73] = jCoord(route[72].x+-51,route[72].y+-135);
+route[74] = jCoord(route[73].x+229,route[73].y+-219);
+route[75] = jCoord(route[74].x+-11,route[74].y+-333);
+route[76] = jCoord(route[75].x+-215,route[75].y+-153);
+route[77] = jCoord(route[76].x+-357,route[76].y+3);
+route[78] = jCoord(route[77].x+-281,route[77].y+-99);
+route[79] = jCoord(route[78].x+-169,route[78].y+-9);
+route[80] = jCoord(route[79].x+-87,route[79].y+9);
+route[81] = jCoord(route[80].x+-13,route[80].y+259);
+route[82] = jCoord(route[81].x+-175,route[81].y+47);
+route[83] = jCoord(route[82].x+-103,route[82].y+79);
+route[84] = jCoord(route[83].x+-91,route[83].y+1);
+   return route;
+}
+
+function whereYouLoggedOut() {
+   jLogin(ACCNAME);
+   while(!jHaveCharlist())
+      jSleep(700);
+   jPrint(jSelectChar(CHARNAME));
+   var logwnd = jWaitNewWindow(CHARNAME, 120000);
+   jSleep(100);
+   logwnd.pushButton(2);
+}
+
+function Relogin() {
+jLogout();
+jSleep(960800);
+whereYouLoggedOut();
+}
+
+ function PFGo(Coord) {
+   if (jMyCoords()==Coord) return;
+   jPFMove(Coord);
+    while (jIsMoving() || jMyCoords().dist(Coord) > 10) {
+      jSleep(200);
+   } 
+ }
+ 
+ function GetStuff() {
+   StartCoord = jMyCoords();
+   Stuff = jGetObjects(400,jCoord(0,0),"glimmermoss");
+   for (var i = 0; i < Stuff.length; i++){
+      PFGo(Stuff[i].position());
+      Stuff[i].doClick(3,0);
+      jWaitPopup();
+      jSelectContextMenu("Pick");
+      jWaitMove(6000);
+      jWaitProgress(20000);
+   }
+   PFGo(StartCoord);
+   Stuff = jGetObjects(400,jCoord(0,0),"/frogscrown");
+   for (var i = 0; i < Stuff.length; i++){
+      PFGo(Stuff[i].position());
+      Stuff[i].doClick(3,0);
+      jWaitPopup();
+      jSelectContextMenu("Pick");
+      jWaitMove(6000);
+      jWaitProgress();
+   }
+   PFGo(StartCoord);
+   Stuff = jGetObjects(400,jCoord(0,0),"/edelweiss");
+   for (var i = 0; i < Stuff.length; i++){
+      PFGo(Stuff[i].position());
+      Stuff[i].doClick(3,0);
+      jWaitPopup();
+      jSelectContextMenu("Pick");
+      jWaitMove(6000);
+      jWaitProgress();
+   }
+   PFGo(StartCoord);
+} 
+
+ function main() {
+   route = GetStartPos();
+   for(var i = 0; i < route.length; i++) {
+      jPrint(i);
+      GetStuff();
+      PFGo(route[i]);
+      if(jGetStamina() < 50) drinkWater();
+   }
+   Relogin();
+   startPos = jCoord(jMyCoords().x-2400,jMyCoords().y-980);
+   route = AnotherStartPos();
+   for(var i = route.length-1; i >-1; i--) {
+      jPrint(i);
+      GetStuff();
+      PFGo(route[i]);
+      if(jGetStamina() < 50) drinkWater();
+   }
+   PFGo(startPos);
+   Relogin();
+}
+ main();

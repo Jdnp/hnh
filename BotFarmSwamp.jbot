@@ -1,0 +1,143 @@
+//#! name = Swamp
+ 
+var ACCNAME = "susavage";         //account name
+var CHARNAME = "claimed your soul";   //character name
+include("jBotAPI");
+inventory = checkInventory();
+jDropLastWindow();
+GetStartPos();
+var startPos = jMyCoords();
+var route = [];
+function GetStartPos() {
+   var startPos = jMyCoords();
+   var route = [];
+   route[0] = jCoord(startPos.x,startPos.y+320);
+   route[1] = jCoord(route[0].x+320,route[0].y);
+   route[2] = jCoord(route[1].x,route[1].y+320);
+   route[3] = jCoord(route[2].x,route[2].y+200);
+   route[4] = jCoord(route[3].x+320,route[3].y);
+   route[5] = jCoord(route[4].x+100,route[4].y);
+   route[6] = jCoord(route[5].x,route[5].y+320);
+   route[7] = jCoord(route[6].x,route[6].y+320);
+   route[8] = jCoord(route[7].x,route[7].y+200);
+   route[9] = jCoord(route[8].x,route[8].y-200);
+   route[10] = jCoord(route[9].x,route[9].y-250);
+   route[11] = jCoord(route[10].x+320,route[10].y);
+   route[12] = jCoord(route[11].x,route[11].y-300);
+   route[13] = jCoord(route[12].x+320,route[12].y);
+   route[14] = jCoord(route[13].x,route[13].y+320);
+   route[15] = jCoord(route[14].x+320,route[14].y);
+   route[16] = jCoord(route[15].x,route[15].y+150);
+   route[17] = jCoord(route[16].x+320,route[16].y);
+   route[18] = jCoord(route[17].x,route[17].y-320);
+   route[19] = jCoord(route[18].x+380,route[18].y);
+   route[20] = jCoord(route[19].x,route[19].y-100);
+   return route;
+}
+
+function AnotherStartPos() {
+   var startPos = jCoord(jMyCoords().x-2400,jMyCoords().y-980);
+   var route = [];
+   route[0] = jCoord(startPos.x,startPos.y+320);
+   route[1] = jCoord(route[0].x+320,route[0].y);
+   route[2] = jCoord(route[1].x,route[1].y+320);
+   route[3] = jCoord(route[2].x,route[2].y+200);
+   route[4] = jCoord(route[3].x+320,route[3].y);
+   route[5] = jCoord(route[4].x+100,route[4].y);
+   route[6] = jCoord(route[5].x,route[5].y+320);
+   route[7] = jCoord(route[6].x,route[6].y+320);
+   route[8] = jCoord(route[7].x,route[7].y+200);
+   route[9] = jCoord(route[8].x,route[8].y-200);
+   route[10] = jCoord(route[9].x,route[9].y-250);
+   route[11] = jCoord(route[10].x+320,route[10].y);
+   route[12] = jCoord(route[11].x,route[11].y-300);
+   route[13] = jCoord(route[12].x+320,route[12].y);
+   route[14] = jCoord(route[13].x,route[13].y+320);
+   route[15] = jCoord(route[14].x+320,route[14].y);
+   route[16] = jCoord(route[15].x,route[15].y+150);
+   route[17] = jCoord(route[16].x+320,route[16].y);
+   route[18] = jCoord(route[17].x,route[17].y-320);
+   route[19] = jCoord(route[18].x+380,route[18].y);
+   route[20] = jCoord(route[19].x,route[19].y-100);
+   return route;
+}
+
+function whereYouLoggedOut() {
+   jLogin(ACCNAME);
+   while(!jHaveCharlist())
+      jSleep(700);
+   jPrint(jSelectChar(CHARNAME));
+   var logwnd = jWaitNewWindow(CHARNAME, 120000);
+   jSleep(100);
+   logwnd.pushButton(2);
+}
+
+function Relogin() {
+jLogout();
+jSleep(960800);
+whereYouLoggedOut();
+}
+
+ function PFGo(Coord) {
+   if (jMyCoords()==Coord) return;
+   jPFMove(Coord);
+    while (jIsMoving() || jMyCoords().dist(Coord) > 10) {
+      jSleep(200);
+   } 
+ }
+ 
+ function GetStuff() {
+   StartCoord = jMyCoords();
+   Stuff = jGetObjects(400,jCoord(0,0),"royaltoadstool");
+   for (var i = 0; i < Stuff.length; i++){
+      PFGo(Stuff[i].position());
+      Stuff[i].doClick(3,0);
+      jWaitPopup();
+      jSelectPopupMenu("Pick");
+      jWaitMove(6000);
+      jWaitProgress(20000);
+   }
+   PFGo(StartCoord);
+   Stuff = jGetObjects(400,jCoord(0,0),"/chimingbluebell");
+   for (var i = 0; i < Stuff.length; i++){
+      PFGo(Stuff[i].position());
+      Stuff[i].doClick(3,0);
+      jWaitPopup();
+      jSelectPopupMenu("Pick");
+      jWaitMove(6000);
+      jWaitProgress();
+   }
+   PFGo(StartCoord);
+   Stuff = jGetObjects(400,jCoord(0,0),"/ladysmantle");
+   for (var i = 0; i < Stuff.length; i++){
+      PFGo(Stuff[i].position());
+      Stuff[i].doClick(3,0);
+      jWaitPopup();
+      jSelectPopupMenu("Pick");
+      jWaitMove(6000);
+      jWaitProgress();
+   }
+   PFGo(StartCoord);
+} 
+
+ function main() {
+   route = GetStartPos();
+   for(var i = 0; i < route.length; i++) {
+      jPrint(i);
+      GetStuff();
+      PFGo(route[i]);
+      if(jGetStamina() < 50) drinkWater();
+   }
+   Relogin();
+   startPos = jCoord(jMyCoords().x-2400,jMyCoords().y-980);
+   route = AnotherStartPos();
+   for(var i = route.length-1; i >-1; i--) {
+      jPrint(i);
+      GetStuff();
+      PFGo(route[i]);
+      if(jGetStamina() < 50) drinkWater();
+   }
+   PFGo(startPos);
+   Relogin();
+}
+ main();
