@@ -1,0 +1,15 @@
+//#! tooltip = Slides Industry Barbarism
+//#! name = Slider
+//#! uniq = apxproduction_slidermover
+
+//life, night, civil, nature, martial, change
+
+function main() {
+	while(true) {
+		jBuyBelief("nature", +1);
+		jBuyBelief("civil", -1);
+		jSleep(600000);
+	}
+}
+
+main();

@@ -1,0 +1,58 @@
+//#! uniq = LAY_STONE
+//#! tooltip = Lay stone line in chosen direction
+//#! name = Lay stone
+//#! icon = paginae/act/laystone
+
+include("jBotAPI");
+
+function GetInvResCount(resName)
+{
+	var inv = checkInventory();
+	var invItems = inv.getItems(resName);
+	return invItems.length;
+}
+
+function LayStone()
+{
+	jSendDoubleAction("stoneroad", "stone");
+	jWaitCursor("dig", actionTimeout);
+	jOffsetClick(jCoord(0, 0), 1, 0);
+	jWaitProgress();
+	jOffsetClick(jCoord(0, 0), 3, 0);
+	jWaitCursor("arw", actionTimeout);
+}
+
+function main()
+{
+	var blist = ["North", "West", "East", "South", "Exit"];
+	var selectWindow = jGUIWindow(jCoord(250, 250), jCoord(190, 120), "Lay Stone");
+	jGUIButton(selectWindow, jCoord(55, 10), 80, blist[0]);
+	jGUIButton(selectWindow, jCoord(5, 35), 80, blist[1]);
+	jGUIButton(selectWindow, jCoord(105, 35), 80, blist[2]);
+	jGUIButton(selectWindow, jCoord(55, 60), 80, blist[3]);
+	jGUIButton(selectWindow, jCoord(55, 100), 80, blist[4]);
+	selectWindow.toggleCloseButton();
+	var btext = selectWindow.waitButtonClick();
+	selectWindow.destroy();
+	if (btext == blist[4]) return;
+
+	var step;
+	if (btext == blist[0]) step = jCoord(0, -11);
+	if (btext == blist[1]) step = jCoord(-11, 0);
+	if (btext == blist[2]) step = jCoord(11, 0);
+	if (btext == blist[3]) step = jCoord(0, 11);
+
+	var startPos = jTilify(jMyCoords());
+
+	var maxLength = 50;
+	var length = Math.min(GetInvResCount("/stone")+1, maxLength);
+	
+	for (var i = 0; i < length; i++)
+	{
+		var pos = jCoord(startPos.x + i*step.x, startPos.y + i*step.y);
+		MoveToPosSafe(pos);
+		LayStone();
+  }
+}
+
+main();

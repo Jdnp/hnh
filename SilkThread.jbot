@@ -1,0 +1,304 @@
+//#! tooltip = Boils silk and crafts threads
+//#! icon = gfx/invobjs/silkthread
+//#! name = Silk threads
+//#! uniq = SILKTHREADSBOT_TY2
+
+//include
+include("jBotAPI");
+
+var inventory = null;
+var startPoint = jCoord(0, 0);
+var secPoint = jCoord(0, 0); //secondary
+
+function openCauldron() {
+	var cauldron = jFindObjectByName("/cauldron", 20);
+	if(cauldron == null) {
+		jToConsole("ERROR: failed to find cauldron.");
+		return false;
+	}
+	jDoClick(cauldron.getID(), 3, 0);
+	var ok = false;
+	ok = jWaitWindow("Cauldron", actionTimeout);
+	return ok;
+}
+
+function getCauldronValue(meter)
+{
+	var ret = -1;
+	if(meter < 1 || meter > 2)
+		return ret;
+	if(!jHaveWindow("Cauldron"))
+		return ret;
+	var cld = jGetWindow("Cauldron");
+	if(cld == null)
+		return ret;
+	ret = cld.getMeterValue(meter);
+	return ret;
+}
+
+function takeTools(water, blocks)
+{
+	var c = startPoint.add(jCoord(22, 11));
+	jAbsClick(c, 1, 0);
+	jWaitMove(actionTimeout);
+	var cup = jFindObjectWithOffset("/cupboard", 5, jCoord(1, 0));
+	if(cup == null) {
+		jToConsole("ERROR: failed to find cupboard with tools.");
+		return false;
+	}
+	jDoClick(cup.getID(), 3, 0);
+	jWaitWindow("Cupboard", actionTimeout);
+	var cupwnd = jGetWindow("Cupboard");
+	if(cupwnd == null)
+		return false;
+	var cupinv = cupwnd.getInventories()[0];
+	if(cupinv == null)
+		return false;
+	if(water == true) {
+		//getting buckets
+		var buckets = cupinv.getItems("buckete", "bucket-water");
+		if(buckets.length < 1) {
+			jToConsole("ERROR: no buckets for water.");
+			return false;
+		}
+		var b = 0;
+		if(b > 2)
+			b = 2;
+		for(var i = 0; i < b; i++)
+			buckets[i].transfer();
+		//waits buckets in pack
+		while(inventory.getItems("buckete", "bucket-water").length != b)
+			jSleep(500);
+	}
+	if(blocks == true) {
+		//getting blocks
+		var blocks = cupinv.getItems("/wood");
+		if(blocks.length < 1) {
+			jToConsole("ERROR: no blocks for fire.");
+			return false;
+		}
+		blocks[0].transfer();
+		//waits buckets in pack
+		while(inventory.getItems("/wood").length != 1)
+			jSleep(500);
+	}
+	return true;
+}
+
+function returnTools()
+{
+	var c = startPoint.add(jCoord(22, 11));
+	jAbsClick(c, 1, 0);
+	jWaitMove(actionTimeout);
+	var cup = jFindObjectWithOffset("/cupboard", 5, jCoord(1, 0));
+	jDoClick(cup.getID(), 3, 0);
+	jWaitWindow("Cupboard", actionTimeout);
+	var b = inventory.getItems("buckete");
+	for(var i = 0; i < b.length; i++)
+		b[i].transfer();
+	while(inventory.getItems("buckete").length > 0)
+		jSleep(500);
+}
+
+function blockToCauldron()
+{
+	inventory.getItems("wood")[0].take();
+	jWaitDrag(actionTimeout);
+	var cld = jFindObjectByName("/cauldron", 20);
+	cld.interactClick(0);
+	jWaitDrop(actionTimeout);
+}
+
+function waterFromBarrels()
+{
+	var barrels = jGetObjects(20, jCoord(0, 0), ["barrel"]);
+	if(barrels.length < 1) {
+		jToConsole("ERROR: no barrels with water.");
+		return false;
+	}
+	for(var i = 0; i < barrels.length; i++) {								//for every barrel
+		if(inventory.getItems("buckete").length < 1) break;					//only if we have empty buckets
+		jAbsClick(barrels[i].position().add(jCoord(0, 11)), 1, 0);			//go to barrel
+		jWaitMove(actionTimeout);											//wait moving
+		jDoClick(barrels[i].getID(), 3, 0);									//opens barrel
+		var bwnd = jWaitNewWindow("Barrel", actionTimeout);					//barrel wnd
+		var label = bwnd.getLabelText(1);									//label at wnd
+		if(label.indexOf("empty") != - 1) /*empty barrel*/ continue;		//if barrel is empty -> go to next
+		while(1) {
+			if(inventory.getItems("buckete").length < 1) break;				//stops if no empty bucketes
+			jDoClick(barrels[i].getID(), 3, 0);								//opens barrel
+			var bwnd = jWaitNewWindow("Barrel", actionTimeout);				//barrel wnd
+			var label = bwnd.getLabelText(1);								//label text at wnd
+			if(label.indexOf("empty") != - 1) /*empty barrel*/ break;		//if barrel is empty -> go to next
+			var bc = inventory.getItems("buckete")[0].coord();				//empty buckete coords at inv
+			inventory.getItems("buckete")[0].take();						//takes empty buckete
+			jWaitDrag(actionTimeout);										//waits for take
+			barrels[i].interactClick(0);									//RMB at barrel
+			while(jGetDraggingItem().resName().indexOf("water") == -1)		//waits for not empty bucket at hands
+				jSleep(500);
+			inventory.drop(bc);												//drops bucket at inv
+			jWaitDrop(actionTimeout);										//waits for drop
+		}
+	}
+	return true;
+}
+
+function waterToCauldron()
+{
+	var eb = inventory.getItems("buckete").length;
+	if(eb > 0) {
+		if(!waterFromBarrels()) return false;
+		jAbsClick(startPoint, 1, 0);
+		jWaitMove(actionTimeout);
+	}
+	var cld = jFindObjectByName("/cauldron", 20);
+	var buckets = inventory.getItems("bucket-water");
+	for(var i = 0; i < buckets.length; i++) {
+		var bc = buckets[i].coord();
+		buckets[i].take();
+		jWaitDrag(actionTimeout);
+		cld.interactClick(0);
+		while(jGetDraggingItem().resName().indexOf("water") != -1)
+			jSleep(500);
+		inventory.drop(bc);
+		jWaitDrop(actionTimeout);
+	}
+	return true;
+}
+
+function takeCocoons()
+{
+	var current = 0;
+	for(var i = 0; i < 6; i++) {
+		var cup = jFindObjectWithOffset("/cupboard", 5, jCoord(1, 0));
+		if(cup == null)
+			continue;
+		jDoClick(cup.getID(), 3, 0);
+		var cupwnd = jWaitNewWindow("Cupboard", actionTimeout);
+		var cupinv = cupwnd.getInventories()[0];
+		var cocoons = cupinv.getItems("silkcocoon");
+		if(cocoons.length < 1)
+			continue;
+		var NTB = false;//need to break;
+		for(var i in cocoons) {
+			cocoons[i].transfer();
+			current++;
+			if(current == 25) {
+				NTB = true;
+				break;
+			}
+		}
+		if(NTB) break;
+		jMoveStep(jCoord(0, -1));
+	}
+}
+
+function haveCocs()
+{
+	var i = inventory.getItems("silkcocoon").length;
+	if(i > 0) return true;
+	else return false;
+}
+
+function craftThreads()
+{
+	var wheel = jFindObjectByName("swheel", 10);
+	if(wheel == null) {
+		jToConsole("ERROR: cannot find wheel.");
+		return false;
+	}
+	jDoClick(wheel.getID(), 3, 0);
+	jWaitMove(actionTimeout);
+	jSleep(5000);
+	jSendDoubleAction("craft", "silkthread");
+	jWaitCraft("Silk Thread", actionTimeout);
+	jCraftItem(true);
+	jSleep(250);
+	while(jHaveHourglass())
+		jSleep(1000);
+	return true;
+}
+
+function transferThreads()
+{
+	var cup = jFindObjectWithOffset("/cupboard", 5, jCoord(-1, 0));
+	if(cup == null) {
+		jToConsole("ERROR: cannot find cupboard.");
+		return false;
+	}
+	jDoClick(cup.getID(), 3, 0);
+	jWaitWindow("Cupboard", actionTimeout);
+	inventory.getItems("silkthread")[0].transferSuchAll();
+	jSleep(2000);
+	return true;
+}
+
+function main()
+{
+	var lastStep = false;
+	inventory = checkInventory();
+	startPoint = jMyCoords();
+	secPoint = startPoint.add(jCoord(22, 0));
+	while(1) {
+		if(lastStep) break;
+		if(!openCauldron()) return;
+		//checks if need to fill cauldron with water or blocks
+		var needWater, needBlocks;
+		if(getCauldronValue(1) < 15)
+			needWater = true;
+		else
+			needWater = false;
+		if(getCauldronValue(2) < 5)
+			needBlocks = true;
+		else
+			needBlocks = false;
+		//need for water/blocks
+		if(needWater || needBlocks) {
+			if(!takeTools(needWater, needBlocks))
+				return;
+			//goto default point
+			jAbsClick(startPoint, 1, 0);
+			jWaitMove(actionTimeout);
+			if(needBlocks)
+				blockToCauldron();
+			if(needWater)
+				if(!waterToCauldron())
+					return;
+			if(inventory.getItems("buckete").length > 0){
+				returnTools();
+				jAbsClick(startPoint, 1, 0);
+				jWaitMove(actionTimeout);
+			}
+		}
+		//get cocoons
+		jAbsClick(secPoint, 1, 0);
+		jWaitMove(actionTimeout);
+		takeCocoons();
+		if(inventory.getItems("silkcocoon").length != 25) lastStep = true;
+		jAbsClick(secPoint, 1, 0);
+		jWaitMove(actionTimeout);
+		jAbsClick(startPoint, 1, 0);
+		jWaitMove(actionTimeout);
+		openCauldron();
+		jSleep(1000);
+		jGetWindow("Cauldron").pushButton(1);
+		jSleep(1000);
+		jSendDoubleAction("craft", "silkfilament");
+		jWaitCraft("Silk Filament", actionTimeout);
+		jCraftItem(true);
+		while(haveCocs())
+			jSleep(3000);
+		if(!craftThreads())
+			return;
+		jAbsClick(startPoint, 1, 0);
+		jWaitMove(actionTimeout);
+		jAbsClick(startPoint.add(jCoord(-3, 0)), 1, 0);
+		jWaitMove(actionTimeout);
+		if(!transferThreads())
+			return;
+		jAbsClick(startPoint, 1, 0);
+		jWaitMove(actionTimeout);
+	} //mainwhile
+}
+
+main();

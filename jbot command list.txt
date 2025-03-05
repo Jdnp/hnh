@@ -1,0 +1,536 @@
+﻿B
+
+Blob (int) - Method in class union.jsbot.JSGob
+Returns the value of the blob zadannomu index
+blobAll () - Method in class union.jsbot.JSGob
+Gets Full blob steel (see in array)
+C
+
+chatName () - Method in class union.jsbot.JSChat
+Returns the name chatting
+close () - Method in class union.jsbot.JSGUI_Window
+Close this window
+close () - Method in class union.jsbot.JSInputWidget
+Closes window
+close () - Method in class union.jsbot.JSWindow
+Window closes.
+coord () - Method in class union.jsbot.JSItem
+Returns the coordinates of item in inventories
+currentAmount () - Method in class union.jsbot.JSItem
+Current returns the number of content item-container
+D
+
+destroy () - Method in class union.jsbot.JSInputWidget
+Method that does not Nado trogatʹ
+doClick (int, int) - Method in class union.jsbot.JSGob
+Click on the object
+drop (Coord) - Method in class union.jsbot.JSInventory
+Kladet in VES implements ukazannye coordinates inventory.
+drop (int, int) - Method in class union.jsbot.JSInventory
+Peregružennaâ function
+drop () - Method in class union.jsbot.JSItem
+VES throws planes do not works with underwear on course
+dropSuchAll () - Method in class union.jsbot.JSItem
+Vybrasyvaet inventory of all items danoogo type.
+dropt (int) - Method in class union.jsbot.JSEquip
+Quit VES to the specified slot
+E
+
+emptyCount () - Method in class union.jsbot.JSEquip
+Returns the number of slots pustyh ékvipa
+F
+
+freeSlots () - Method in class union.jsbot.JSInventory
+Nezanâtyh returns the number of slots in inventories
+freeSlotsCoords () - Method in class union.jsbot.JSInventory
+Returns an array of coordinate pustyh inventory slots.
+G
+
+getId () - Method in class union.jsbot.JSGob
+Returns the object identifier
+getint () - Method in class union.jsbot.JSGUI_TextEntry
+Get an integer value from the input field, if value does not translate in udaetsâ integer, this function Vernet 0
+getInventories () - Method in class union.jsbot.JSWindow
+Returns an array inventarej window.
+getItems (String. ..) - Method in class union.jsbot.JSInventory
+Returns a list of stuff
+getKinGroup () - Method in class union.jsbot.JSGob
+Returns a Group B kotoruû painted with Danny object in kinah
+getKinType () - Method in class union.jsbot.JSGob
+Gets the type of cinema for THIS object (HZ Î Î, but in Ney contains flag villages)
+getLabelText (int) - Method in class union.jsbot.JSWindow
+Returns the text in the window Leib (for example in the window with bočkoj)
+getLastMessage () - Method in class union.jsbot.JSChat
+Returns poslenee prišedšee message
+getMeterValue (int) - Method in class union.jsbot.JSWindow
+Returns the value of quantities RESURSOV in ranking (izmeritele or Xuj than in ZNAET)
+getText () - Method in class union.jsbot.JSGUI_Label
+Gets the text Leib
+getText () - Method in class union.jsbot.JSGUI_TextEntry
+Get text from input field
+H
+
+hasLayer (String) - Method in class union.jsbot.JSGob
+Checks the presence substring in layers RESURSOV
+haveNewMessage () - Method in class union.jsbot.JSChat
+Checks have the new message in Chat
+health () - Method in class union.jsbot.JSGob
+Returns an object health (Percentage)
+I
+
+iAct (int) - Method in class union.jsbot.JSEquip
+Vyzvat kontekstnoe menu item
+iAct () - Method in class union.jsbot.JSItem
+Summon the context menu item works with no underwear on course
+include (String) - Static method in class union.jsbot.JSHaven
+Podgružaet file in a script.
+innerQuality () - Method in class union.jsbot.JSItem
+Gets the "Interior" item quality (water quality in bright)
+interactClick (int) - Method in class union.jsbot.JSGob
+Interaction THIS Goba case in hands (of course) Characters
+intValue () - Method in class union.jsbot.JSInputWidget
+Returns čislovoe value from input field
+isActual () - Method in class union.jsbot.JSBuff
+Checks exists the object More
+isActual () - Method in class union.jsbot.JSChat
+Checks exists the object More
+isActual () - Method in class union.jsbot.JSGob
+Checks exists the object More
+isActual () - Method in class union.jsbot.JSInventory
+Checks exists the object More
+isActual () - Method in class union.jsbot.JSItem
+Checks exists the object More
+isActual () - Method in class union.jsbot.JSWindow
+Checks exists the object More
+isCarrying () - Method in class union.jsbot.JSGob
+Checks whether the object deržit CTO Libo in the hands (Above head)
+isChecked () - Method in class union.jsbot.JSGUI_CheckBox
+Check, installed the flag
+isFreeSlot (Coord) - Method in class union.jsbot.JSInventory
+Checks inventories in the empty slot with the specified coordinates.
+isFreeSlot (int, int) - Method in class union.jsbot.JSInventory
+Peregružennaâ function
+isGroupKin (int) - Method in class union.jsbot.JSGob
+Checks whether the object is okrašennym in thé color in kinah
+isInParty () - Method in class union.jsbot.JSGob
+Checks whether the object is to suffer with you
+isInYourVillage () - Method in class union.jsbot.JSGob
+Checks whether the object composed with you in one village
+Belkin () - Method in class union.jsbot.JSGob
+Checks whether the object is in kinah
+isLaying () - Method in class union.jsbot.JSGob
+Checks whether the object Lie
+isMoving () - Method in class union.jsbot.JSGob
+Checks whether the object dvižetsâ
+isOverlayed () - Method in class union.jsbot.JSGob
+Checks whether the object podsvečen
+isPlayer () - Method in class union.jsbot.JSGob
+Checks whether the object is a Character
+isSitting () - Method in class union.jsbot.JSGob
+Checks whether the object sits
+itemact (int) - Method in class union.jsbot.JSEquip
+Interaction of the item cursors with underwear ékvipa
+itemact (int) - Method in class union.jsbot.JSItem
+Interaction with underwear item on the course (čtoto holding in hands and žmem knopkoj right mouse on tekuŝuû VES)
+J.
+
+jAbsClick (Object, int, int) - Static method in class union.jsbot.JSHaven
+Otpravlâet the server ŝelček in ukazannye in map coordinates (Absolute, in point cards)
+jAbsInteractClick (Object, int) - Static method in class union.jsbot.JSHaven
+Vzaimodestvie case in hands with the point on the map (Absolute, in point cards)
+jAbsTileType (Object) - Static method in class union.jsbot.JSHaven
+ 
+jBuddyDumpCurrentInfo () - Static method in class union.jsbot.JSHaven
+Returns info about vestments for the current theater
+jBuddyDumpCurrentName () - Static method in class union.jsbot.JSHaven
+Returns the current selected text name China
+jBuddyForgetCurrent () - Static method in class union.jsbot.JSHaven
+Forgotten cinema selected text
+jBuddyInfoChanged () - Static method in class union.jsbot.JSHaven
+Checks izmenilasʹ the information in kinah (in case changes flag sbrasyvaetsâ)
+jBuddyList () - Static method in class union.jsbot.JSHaven
+Returns an array of kinov kinlista
+jBuddySetHS (String) - Static method in class union.jsbot.JSHaven
+Set Strock in golf HSA
+jBuyBelief (String, int) - Static method in class union.jsbot.JSHaven
+Function dvigaet slider belifsov.
+jCloseCraft () - Static method in class union.jsbot.JSHaven
+ 
+jCoord (int, int) - Static method in class union.jsbot.JSHaven
+Returns the variable type with the specified Coord koordinatami
+jCraftItem (boolean) - Static method in class union.jsbot.JSHaven
+Skraftitʹ VES
+jDescribeChar (String) - Static method in class union.jsbot.JSHaven
+Diskrajbnutʹ (peredatʹ kin) specified Cara
+jDoClick (int, int, int) - Static method in class union.jsbot.JSHaven
+Otpravlâet the server ŝelček mouse on the object
+jDrawGroundRect (Object, Object) - Static method in class union.jsbot.JSHaven
+Draws a rectangular area on the ground.
+jDropLastWindow () - Static method in class union.jsbot.JSHaven
+Dirty hack, Things This vyzvat Start the script, if you are working with windows in scripts
+jDropObject (int) - Static method in class union.jsbot.JSHaven
+Vybrositʹ planes object that the cursors
+jEndKinshipForget (String) - Static method in class union.jsbot.JSHaven
+Finish analʹnuû "Congregation" with characters from the kin list, works as "End kinship."
+jExileChar (String) - Static method in class union.jsbot.JSHaven
+Vygnatʹ emperor villages (available lauspikeru) specified Cara
+jExit () - Static method in class union.jsbot.JSHaven
+Triggering the script completes
+jFindMapObjectNearAbs (Object, int, String) - Static method in class union.jsbot.JSHaven
+ 
+jFindObjectByName (String, int) - Static method in class union.jsbot.JSHaven
+Returns the object or null JSGob the specified name in the specified resource Radius (tajly) by Player
+jFindObjectWithOffset (String, int, Object) - Static method in class union.jsbot.JSHaven
+Finds JSGob object in the specified RADIUS with an offset by Player
+jGetBelief (String) - Static method in class union.jsbot.JSHaven
+Function Retrieves the value of counter Belief for specific parameters pane belifsov There should be opened
+jGetBuffs () - Static method in class union.jsbot.JSHaven
+Returns all baffy, Kotoryi now have baffami work with under the appropriate documentation
+jGetBuildResName (String, int) - Static method in class union.jsbot.JSHaven
+Returns the resource name in the specified (per account) blocks built in window
+jGetBuildToolTip (String, int) - Static method in class union.jsbot.JSHaven
+Returns the value of hints in the specified (per account) blocks built in window
+jGetBuildValues ​​(String, int) - Static method in class union.jsbot.JSHaven
+Returns the value in the specified (per account) blocks built in window
+jGetChats () - Static method in class union.jsbot.JSHaven
+Returns a list of current chats work with Chatham watch under the appropriate documentation
+jGetCursor () - Static method in class union.jsbot.JSHaven
+Returns the current cursor name
+jGetDraggingItem () - Static method in class union.jsbot.JSHaven
+Gets VES on course
+jGetHHP () - Static method in class union.jsbot.JSHaven
+Returns hardHP Player
+jGetHungry () - Static method in class union.jsbot.JSHaven
+Returns ABSOLUTE golod Characters
+jGetInputWidget (int, int, String, String) - Static method in class union.jsbot.JSHaven
+Function creates a window "Input".
+jGetJSEquip () - Static method in class union.jsbot.JSHaven
+Returns the object type JSEquip for work with inventory.
+jGetMHP () - Static method in class union.jsbot.JSHaven
+Returns the maximum number of HP Player
+jGetMyID () - Static method in class union.jsbot.JSHaven
+Gets the identifier characters
+jGetNearestTileCoord (int, int) - Static method in class union.jsbot.JSHaven
+Returns the coordinates of the nearest offset in TH TH with the specified type
+jGetObjects (int, Object, Object) - Static method in class union.jsbot.JSHaven
+Returns an array of objects in the specified RADIUS JSGob with an offset from the player (in TH)
+jGetObjectsInRect (Object, Object, int, Object) - Static method in class union.jsbot.JSHaven
+Returns an array of objects JSGob with the specified name, and BLOB'om in the specified rectangle.
+jGetSHP () - Static method in class union.jsbot.JSHaven
+Returns softHP Player
+jGetSpeed ​​() - Static method in class union.jsbot.JSHaven
+Returns tekuŝuû speed Characters (0 .3)
+jGetStamina () - Static method in class union.jsbot.JSHaven
+Returns fatigue Characters
+jGetTileType (Object) - Static method in class union.jsbot.JSHaven
+Gets the type of TH in offsets from player (in TH)
+jGetVersion () - Static method in class union.jsbot.JSHaven
+ 
+jGetWindow (String) - Static method in class union.jsbot.JSHaven
+Vozvraŝet class object JSWindow specified window Work with windows under the appropriate documentation
+jGetWindows (String) - Static method in class union.jsbot.JSHaven
+Returns an array with the specified name windows (convenient for Seedbag)
+jGob (int) - Static method in class union.jsbot.JSHaven
+Returns JSGob by his identifier (wrap for ustarevših function)
+jGUIButton (Object, Object, int, String) - Static method in class union.jsbot.JSHaven
+Creates a button
+jGUICbox (Object, Object, String) - Static method in class union.jsbot.JSHaven
+Creates a checkbox
+jGUIEntry (Object, Object, Object, String) - Static method in class union.jsbot.JSHaven
+Creates an input field
+jGUILabel (Object, Object, String) - Static method in class union.jsbot.JSHaven
+Creates a text label
+jGUIWindow (Object, Object, String) - Static method in class union.jsbot.JSHaven
+Creates a window
+jHaveAggro () - Static method in class union.jsbot.JSHaven
+Checks whether Character is under aggro
+jHaveCharlist () - Static method in class union.jsbot.JSHaven
+Returns true if the screen have the choice list of characters.
+jHaveCraft (String) - Static method in class union.jsbot.JSHaven
+Checks availability windows Kraft
+jHaveHourglass () - Static method in class union.jsbot.JSHaven
+Checks the presence Progress (Hourglass)
+jHaveParty () - Static method in class union.jsbot.JSHaven
+None shows the player in views with other igrokami
+jHavePopup () - Static method in class union.jsbot.JSHaven
+Checks the presence context menu
+jHavePopupOption (String) - Static method in class union.jsbot.JSHaven
+Checks the presence checkpoint in the context menu
+jHaveWindow (String) - Static method in class union.jsbot.JSHaven
+Validates opened the window
+jImgClick (String, int, int, int) - Static method in class union.jsbot.JSHaven
+Posylaet click in the window boat / ... to the specified slot with the specified identifier
+jImgFreeSlots (String) - Static method in class union.jsbot.JSHaven
+Pustyh returns the number of slots in the boating / ...
+jImgName (String, int) - Static method in class union.jsbot.JSHaven
+Function for work with "invetarâmi" boat / kartov / wagons
+jImgSlotsCount (String) - Static method in class union.jsbot.JSHaven
+Pustyh returns the number of slots in the boating / ...
+jInGamePrint (String) - Static method in class union.jsbot.JSHaven
+Show the message text in the game (TAM where vsâkie "This land is owned by someone")
+jInteractClick (Object, int) - Static method in class union.jsbot.JSHaven
+Vzaimodestvie case in hands (of course) with a point on the map (in TH) about Player
+jIsCraftReady () - Static method in class union.jsbot.JSHaven
+Checks over the shaft Kraft
+jIsCursor (String) - Static method in class union.jsbot.JSHaven
+Validates the current cursor name with the specified
+jIsDragging () - Static method in class union.jsbot.JSHaven
+Checks the presence of cases in the hands (of course)
+jIsMoving () - Static method in class union.jsbot.JSHaven
+Checks whether dvigaetsâ Character
+jIsPathFree (Object) - Static method in class union.jsbot.JSHaven
+Checks can you walk to the point ukazannoj Barcode generated
+jLogin (String) - Static method in class union.jsbot.JSHaven
+Zaloginitʹsâ for characters with the specified login
+jLogout () - Static method in class union.jsbot.JSHaven
+Completes tekuŝuû Sessions characters (logaut)
+jMoveStep (Object) - Static method in class union.jsbot.JSHaven
+Peredvigaetsâ the specific number tajlov about player
+jMyCoords () - Static method in class union.jsbot.JSHaven
+Returns the coordinates of Player
+jOffsetClick (Object, int, int) - Static method in class union.jsbot.JSHaven
+Otpravlâet the server ŝelček in map coordinates in ukazannye about player (in TH)
+jPartyClick (int, int) - Static method in class union.jsbot.JSHaven
+Otpravlâet click on the portrait to suffer
+jPFClick (int) - Static method in class union.jsbot.JSHaven
+Click on the object right mouse button using the PF
+jPFMove (Object) - Static method in class union.jsbot.JSHaven
+Dvigatʹsâ the PF to ukazannoj point coordinates assign Absolute
+jPlace (Object, int, int) - Static method in class union.jsbot.JSHaven
+Set object kotoryj deliberate build in ukazannye coordinates (in TH) about Player
+jPlayBeep (int) - Static method in class union.jsbot.JSHaven
+Plays a sound specific number millesekund not triggering Chopping script
+jPrint (String) - Static method in class union.jsbot.JSHaven
+Show a message in the console (sistemnuû) function also allows Show number and other facilities without extra transformations
+jPrivateChat (String) - Static method in class union.jsbot.JSHaven
+Opens ličnuû Chatting with the specified characters from the kin list
+JSBuff - Class in union.jsbot
+ 
+JSBuff (int) - Constructor for class union.jsbot.JSBuff
+ 
+JSChat - Class in union.jsbot
+ 
+JSChat (int) - Constructor for class union.jsbot.JSChat
+ 
+jSelectChar (String) - Static method in class union.jsbot.JSHaven
+Select emperor specified name
+jSelectContextMenu (String) - Static method in class union.jsbot.JSHaven
+Select nužnyj Item context menu
+jSelectObject (String) - Static method in class union.jsbot.JSHaven
+'Prosit' Player Select object myškoj nudes MUST ŝelknutʹ the Any object, then control vernets in a script.
+jSendAction (String) - Static method in class union.jsbot.JSHaven
+Send to act on the server
+jSendDoubleAction (String, String) - Static method in class union.jsbot.JSHaven
+Send to act on the server, but with two parameters
+jSendParty (String) - Static method in class union.jsbot.JSHaven
+Posylaet request the views ukazannomu Aliases
+JSEquip - Class in union.jsbot
+ 
+JSEquip () - Constructor for class union.jsbot.JSEquip
+ 
+jSetRendering (boolean) - Static method in class union.jsbot.JSHaven
+Includes / disables rendering
+jSetSpeed ​​(int) - Static method in class union.jsbot.JSHaven
+Ustanovlivaet tekuŝuû speed peredviženiâ Characters
+JSGob - Class in union.jsbot
+ 
+JSGob (int) - Constructor for class union.jsbot.JSGob
+ 
+JSGUI_Button - Class in union.jsbot
+ 
+JSGUI_Button (int) - Constructor for class union.jsbot.JSGUI_Button
+ 
+JSGUI_CheckBox - Class in union.jsbot
+ 
+JSGUI_CheckBox (int) - Constructor for class union.jsbot.JSGUI_CheckBox
+ 
+JSGUI_Label - Class in union.jsbot
+ 
+JSGUI_Label (int) - Constructor for class union.jsbot.JSGUI_Label
+ 
+JSGUI_TextEntry - Class in union.jsbot
+ 
+JSGUI_TextEntry (int) - Constructor for class union.jsbot.JSGUI_TextEntry
+ 
+JSGUI_Window - Class in union.jsbot
+ 
+JSGUI_Window (int) - Constructor for class union.jsbot.JSGUI_Window
+ 
+JSHaven - Class in union.jsbot
+ 
+JSHaven () - Constructor for class union.jsbot.JSHaven
+ 
+jShowWarnings (boolean) - Static method in class union.jsbot.JSHaven
+Pereklûčaet regime showed predupreždenij for ustarevših function
+JSInputWidget - Class in union.jsbot
+ 
+JSInputWidget (Coord, String, String) - Constructor for class union.jsbot.JSInputWidget
+Building JSInputWidget.
+JSInventory - Class in union.jsbot
+ 
+JSInventory (int) - Constructor for class union.jsbot.JSInventory
+ 
+JSite - Class in union.jsbot
+ 
+JSite (int) - Constructor for class union.jsbot.JSItem
+ 
+jSleep (int) - Static method in class union.jsbot.JSHaven
+Priostanavlivaet current flow in Kotor vypolnâetsâ bot
+JSMap - Class in union.jsbot
+ 
+JSMap () - Constructor for class union.jsbot.JSMap
+ 
+JSWindow - Class in union.jsbot
+ 
+JSWindow (int) - Constructor for class union.jsbot.JSWindow
+ 
+jTakeBuildItem (String, int) - Static method in class union.jsbot.JSHaven
+Barrett in hand washing machine from panes of Construction
+jTilify (Object) - Static method in class union.jsbot.JSHaven
+Returns the coordinates 'centrirovaniâ' by TH
+jToConsole (String) - Static method in class union.jsbot.JSHaven
+Show a message in the game console (Messages tab)
+jToggleEquipment () - Static method in class union.jsbot.JSHaven
+Opens / closes ékvip (Equipment) Player ...
+jToggleInventory () - Static method in class union.jsbot.JSHaven
+Opens / closes implements Player according Togo closed / open he
+jToggleSheet () - Static method in class union.jsbot.JSHaven
+Opens / closes window statistics (Character Sheet) Player ...
+jTransferBuildItem (String, int) - Static method in class union.jsbot.JSHaven
+Moves in implements Player Weight (One for one Summon function) of window construction
+jWaitCraft (String, int) - Static method in class union.jsbot.JSHaven
+Public is ready Pane Kraft
+jWaitCursor (String, int) - Static method in class union.jsbot.JSHaven
+Public Function is ready specified cursor
+jWaitDrag (int) - Static method in class union.jsbot.JSHaven
+Public Function item is ready to cursors (Poka What is ready-not Take in hand)
+jWaitDrop (int) - Static method in class union.jsbot.JSHaven
+Function is ready isčeznoveniâ item with the cursor (Poka What is ready-not emissions of the hands)
+jWaitEndMove (int) - Static method in class union.jsbot.JSHaven
+Function is ready thread Complete Motion Player
+jWaitEndMoveGob (int, int) - Static method in class union.jsbot.JSHaven
+Function is ready Complete Motion Object
+jWaitEndProgress (int) - Static method in class union.jsbot.JSHaven
+Function is ready Progress Complete
+jWaitMove (int) - Static method in class union.jsbot.JSHaven
+Home is ready, and then motion Completion Characters
+jWaitMoveGob (int, int) - Static method in class union.jsbot.JSHaven
+Home is ready, and then object motion Completion
+jWaitNewWindow (String, int) - Static method in class union.jsbot.JSHaven
+Public Function is ready specified window and returns it if it poâvilosʹ during timeout
+jWaitPopup (int) - Static method in class union.jsbot.JSHaven
+Public Function is ready context menu
+jWaitProgress (int) - Static method in class union.jsbot.JSHaven
+Full cycle is ready Progress
+jWaitStartMove (int) - Static method in class union.jsbot.JSHaven
+Start Motion function is ready Characters
+jWaitStartMoveGob (int, int) - Static method in class union.jsbot.JSHaven
+Start Motion function is ready property
+jWaitStartProgress (int) - Static method in class union.jsbot.JSHaven
+Function is ready beginning Progress
+jWaitWindow (String, int) - Static method in class union.jsbot.JSHaven
+Public Function is ready specified window
+jYouAggroedId (int) - Static method in class union.jsbot.JSHaven
+ 
+M
+
+maxAmount () - Method in class union.jsbot.JSItem
+Returns the maximum capacity item (for example, 10 liters in cans)
+meter () - Method in class union.jsbot.JSBuff
+Returns the progress under Baffle (Percentage)
+meter () - Method in class union.jsbot.JSItem
+Returns the result item Progress
+N
+
+name () - Method in class union.jsbot.JSBuff
+Returns the name Baffa
+name (int) - Method in class union.jsbot.JSEquip
+Returns the item name ékvipa
+name () - Method in class union.jsbot.JSGob
+Returns the full name resource property
+name () - Method in class union.jsbot.JSItem
+Returns the item name (full name without tultip Rusersa)
+negSize () - Method in class union.jsbot.JSGob
+Returns the size hitboksa, if he have
+About
+
+offsetMove (Coord) - Method in class union.jsbot.JSGob
+Clicking in the specified offsets from the object (in point cards)
+P
+
+position () - Method in class union.jsbot.JSGob
+Absolute Returns the coordinates of the property
+pushbutton (String) - Method in class union.jsbot.JSWindow
+Nažimaet button with the specified name in this window
+pushbutton (int) - Method in class union.jsbot.JSWindow
+This peregružennaâ function.
+Q
+
+quality (int) - Method in class union.jsbot.JSEquip
+Returns the item in the specified quality Slote ékvipa
+quality () - Method in class union.jsbot.JSItem
+Returns the item quality
+R
+
+resName (int) - Method in class union.jsbot.JSEquip
+Gets the full name of resources
+resName () - Method in class union.jsbot.JSItem
+Returns the full name resource item
+On
+
+SendMessage (String) - Method in class union.jsbot.JSChat
+Posylaet message
+setChecked (boolean) - Method in class union.jsbot.JSGUI_CheckBox
+Set checkbox status
+setOverlay (boolean) - Method in class union.jsbot.JSGob
+Includes / vyklûčaet podsvečivanie objects
+setText (String) - Method in class union.jsbot.JSGUI_Button
+Sets the text button
+setText (String) - Method in class union.jsbot.JSGUI_CheckBox
+Set text checkbox
+setText (String) - Method in class union.jsbot.JSGUI_Label
+Set text Leib
+setText (String) - Method in class union.jsbot.JSGUI_TextEntry
+Set the text in the input box
+size () - Method in class union.jsbot.JSInventory
+Returns the size of inventory
+size () - Method in class union.jsbot.JSItem
+Returns the size of the object (in the cells of the inventory)
+sortItems (JSItem [], String, boolean) - Static method in class union.jsbot.JSInventory
+Sorts an array of things.
+stage () - Method in class union.jsbot.JSItem
+Returns the number of stages of things (for example in the worm moth)
+T
+
+take () - Method in class union.jsbot.JSItem
+Takes the cursor to the item
+takeAt (int) - Method in class union.jsbot.JSEquip
+Take a thing from the specified slot
+textValue () - Method in class union.jsbot.JSInputWidget
+Returns the text of the input field
+time () - Method in class union.jsbot.JSBuff
+Returns the time before the end of the buff (0 .. 100)
+toggleCloseButton () - Method in class union.jsbot.JSGUI_Window
+Show / Hide button to "close" the window
+transfer (int) - Method in class union.jsbot.JSEquip
+Move ekvipa thing of the active inventory
+transfer () - Method in class union.jsbot.JSItem
+Peremescheat thing in other equipment
+transferSuchAll () - Method in class union.jsbot.JSItem
+Moves all objects of this type to the next inventory.
+type (char, KeyEvent) - Method in class union.jsbot.JSInputWidget
+Method that does not need to touch
+U
+
+union.jsbot - package union.jsbot
+ 
+W
+
+waitButtonClick () - Method in class union.jsbot.JSGUI_Window
+Waiting for the button in the
+waitClick () - Method in class union.jsbot.JSGUI_Button
+Waiting pressing
+waitForPress (int) - Method in class union.jsbot.JSInputWidget
+Waiting clicking "Ok"
+wdgmsg (Widget, String, Object ...) - Method in class union.jsbot.JSInputWidget
+Method that does not need to touch

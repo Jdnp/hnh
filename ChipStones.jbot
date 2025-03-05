@@ -1,0 +1,91 @@
+//#! uniq = CHIPSTONES
+//#! tooltip = Chip stones to sign
+//#! name = Chip stones
+//#! icon = gfx/invobjs/stone
+
+include("jBotAPI");
+
+//---------------------------------------------------------------------
+
+var foodList = ["meat-cow", "cowchorizo"];
+
+function EatFood()
+{
+	var inv = checkInventory();
+	var fitems = inv.getItems(foodList);
+	if (fitems.length <= 0) return;
+	fitems[0].iact();
+	if (jWaitPopup(actionTimeout)) jSelectContextMenu("Eat");
+	while(fitems[0].isActual()) jSleep(150);
+}
+
+function DropFromCursor()
+{
+	while (jIsDragging())
+	{
+		jDropObject(0);
+		jSleep(300);
+	}
+}
+
+//---------------------------------------------------------------------
+function ChipStones()
+{
+	var stone = jSelectObject("Select stone ...");
+	var sign = jSelectObject("Select sign ...");
+
+	if (stone == null) Finish("no stone");
+	if (sign == null) Finish("no sign");
+
+	jSetSpeed(2);
+	while (true)
+	{
+		DropFromCursor();
+
+		if (jGetStamina() < 40) drinkWater();
+		if (jGetHungry() < 85) EatFood();
+		if (jGetHungry() < 52) Finish("too hungry.");
+
+		// chip stones
+		if (!stone.isActual()) Finish("no stone");
+		stone.doClick(3, 0);
+		jWaitPopup(actionTimeout);
+		jSleep(100);
+		if (jHavePopup())
+		{
+			jSelectContextMenu("Chip stone");
+			jWaitProgress(5*60*1000);
+		} 	
+		DropFromCursor();
+
+		var inv = checkInventory();
+		var items = inv.getItems("catgold");
+		if (items.length > 0)
+		{	
+			items[0].dropSuchAll();
+			//awaits dropping
+			while (inv.getItems("catgold").length > 0) jSleep(300);
+		}
+
+		// put stones to sign
+		if (!sign.isActual()) Finish("no sign");
+
+		sign.doClick(3, 0);
+		jWaitMove(actionTimeout);
+
+		var inv = checkInventory();
+		var invItems = inv.getItems("/stone");
+		var invCount = invItems.length;
+		if (invCount == 0) continue;
+		invItems[0].transferSuchAll();
+		jSleep(500);
+	}
+}
+
+//---------------------------------------------------------------------
+function main()
+{
+	ChipStones();
+}
+
+main();

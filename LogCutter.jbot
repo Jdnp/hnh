@@ -1,0 +1,69 @@
+//#! uniq = LOGBREAKERBOT
+//#! name = Log breaker
+//#! tooltip = Logs to blocks or boards
+//#! icon = gfx/invobjs/small/saw
+
+function checkEquipment()
+{
+	if(!jHaveWindow("Equipment"))
+	{
+		jToggleEquipment();
+		while(!jHaveWindow("Equipment")) jSleep(100);
+	}
+	return jGetJSEquip();
+}
+
+function main()
+{
+	var blist = ["Chop into Blocks", "Make Boards", "Exit"];
+	var selectWindow = jGUIWindow(jCoord(250, 250), jCoord(140, blist.length*30 + 10), "Log Breaker");
+	for (var i = 0; i < blist.length-1; i++)
+	{
+		jGUIButton(selectWindow, jCoord(5, 5 + i*30), 130, blist[i]);
+	}
+	var i = blist.length-1;
+	jGUIButton(selectWindow, jCoord(5, 5 + i*30+10), 130, blist[i]);
+
+	selectWindow.toggleCloseButton();
+	var btext = selectWindow.waitButtonClick();
+	if (btext == "Exit") {selectWindow.destroy(); return;}
+	selectWindow.destroy();
+
+	if (btext == blist[0])
+	{
+		var equip = checkEquipment();
+		var n1 = equip.resName(6);
+		var n2 = equip.resName(7);
+		if(n1.indexOf("/axe") == -1 && n2.indexOf("/axe") == -1)
+		{
+			jToConsole("You must be equipped with axe.");
+			return;
+		}
+	}
+	if (btext == blist[1])
+	{
+		var equip = checkEquipment();
+		var n1 = equip.resName(6);
+		var n2 = equip.resName(7);
+		if (n1.indexOf("/saw") == -1 && n2.indexOf("/saw") == -1)
+		{
+			jToConsole("You must be equipped with saw.");
+			return;
+		}
+	}
+
+	while(1)
+	{
+		var log = jFindObjectByName("/log", 2);
+		if (log == null) break;
+		log.doClick(3, 0);
+		jWaitPopup(10000);
+		jSleep(100);
+		jSelectContextMenu(btext);
+		while (!jHaveHourglass()) jSleep(100);
+		while(jHaveHourglass()) jSleep(100);
+		jSleep(100);
+	}
+}
+
+main();

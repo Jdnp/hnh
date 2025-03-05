@@ -1,0 +1,20 @@
+//#! uniq = SHITPICKERBOT
+//#! tooltip = Takes shit from the ground
+//#! name = Obj picker
+
+function main()
+{
+	var obj = jSelectObject("Select object...");
+	var shit = obj.name();
+	while(1)
+	{
+		if(jIsDragging()) break;
+		shitid = jFindObjectByName(shit, 10); 
+		if(shitid == null)
+			break;
+		shitid.doClick(3, 0);
+		jSleep(100);
+	}
+}
+
+main();

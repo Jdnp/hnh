@@ -1,0 +1,95 @@
+//#! uniq = Cave_Forager_15873018
+//#! name = AlexSwamp - Cave - AlexSwamp, swampforage1
+//#! tooltip = Collects curios in cave
+//#! icon = gfx/invobjs/herbs/cavebulb
+
+include("jBotAPI");
+
+// Before start set camera mode "Fixed" or "Borderizer"
+
+var accName = "swampforage1"; // account name
+var charName = "AlexSwamp"; // character name
+
+collectCurios = ["glimmermoss", "stalagoom", "cavebulb", "caveclay", ]; // 
+dropCurios = ["glimmermoss", "stalagoom", "cavebulb", "clay-cave", ]; // 
+dropQuality = [10, 10, 1, 10, ]; // 
+
+// Path depends on the marsh mountain or lake etc
+var startPos = jCoord(0, 0);
+var waypoints =
+[
+	[-10, 10],
+	[-32, 21],
+	[-66, 32],
+	[-68, 52],
+	[-37, 70],
+	[-9, 70],
+	[-36, 71],
+	[-79, 51],
+	[-91, 61],
+	[-87, 77],
+	[-89, 92],
+	[-99, 102],
+	[-124, 111],
+	[-121, 132],
+	[-123, 146],
+	[-147, 147],
+	[-152, 163],
+	[-149, 184],
+	[-129, 188],
+	[-107, 202],
+	[-91, 195],
+	[-125, 196],
+	[-138, 186],
+	[-175, 179],
+	[-221, 148],
+	[-251, 143],
+	[-204, 158],
+	[-163, 184],
+	[-152, 180],
+	[-151, 150],
+	[-122, 143],
+	[-123, 111],
+	[-88, 94],
+	[-101, 67],
+	[-130, 63],
+	[-155, 52],
+	[-176, 33],
+	[-191, 44],
+	[-213, 52],
+	[-184, 70],
+	[-181, 81],
+	[-207, 54],
+	[-237, 61],
+	[-260, 67],
+	[-280, 63],
+	[-304, 78],
+	[-315, 106],
+	[-322, 121],
+	[-333, 123],
+	[-340, 144],
+	[-337, 159],
+	[-324, 177],
+	[-314, 185],
+	[-285, 185],
+	[-249, 197],
+	[-231, 212],
+	[-205, 243],
+	[-194, 251],
+	[-166, 265],
+	[-153, 266],
+	[-138, 282],
+	[-120, 281],
+	[-118, 297],
+	[-88, 310],
+	[-56, 322],
+	[-40, 319],
+	[-23, 339],
+];
+
+function main()
+{
+	CollectMount2(accName, charName, collectCurios, dropCurios, dropQuality, startPos, waypoints);
+}
+
+main();

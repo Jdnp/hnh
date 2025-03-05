@@ -1,0 +1,20 @@
+//#! tooltip = Move Sliders
+//#! name = Slider
+//#! uniq = apxproduction_slidermover
+//#! icon = gfx/hud/skills/ancestral
+
+//life, night, civil, nature, martial, change
+
+function main()
+{
+	while(true)
+	{
+		jBuyBelief("martial", 1);
+		jBuyBelief("change", 1);
+		jBuyBelief("civil", 1);
+		jBuyBelief("life", 1);
+		jSleep(600000);
+	}
+}
+
+main();

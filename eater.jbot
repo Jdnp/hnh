@@ -1,0 +1,179 @@
+//#! name = Eater
+//#! tooltip = Laystone all plowed tiles
+//#! uniq = eater_apxproduction
+//#! icon = gfx/invobjs/gast-cutlery-silver
+
+include("jBotAPI");
+var chests = new Array();
+var chest_status = new Array();
+var inventory = checkInventory();
+var foodName = "wurst-lambsausages"; //имя хавки
+
+function fillBuckets() {
+	var buckets = inventory.getItems("buckete");
+	var well = jFindObjectByName("terobjs/well", 55);		
+	for (var i = 0; i < buckets.length; i++){
+		var bucket_coord = buckets[i].coord();
+		buckets[i].take();
+		jWaitDrag(actionTimeout);
+		jObjectInteractClick(well.getID(), 0);
+		var bucket = jGetDraggingItem();
+		while (bucket.resName().indexOf("bucket-water") <= 0) jSleep(100);
+		inventory.drop(bucket_coord);
+		jWaitDrop(actionTimeout);
+	}
+}
+
+function starv() {
+	var well = jFindObjectByName("terobjs/well", 25);
+	jObjectOffsetMove(well.getID(), jCoord(0, 1));
+	jWaitMove(actionTimeout);
+	while (jGetHungry() > 50) {
+		jSetSpeed(3);
+		fillBuckets();
+		jMoveStep(jCoord(30, 0));
+		jWaitStartMove(30000);
+		drinkWater();
+		jWaitEndMove(30000);
+		jWaitEndProgress(30000);
+		jMoveStep(jCoord(-30, 0));
+		jWaitStartMove(30000);
+		drinkWater();
+		jWaitEndMove(30000);
+		jWaitEndProgress(30000);
+	}
+}
+
+function move_to_cp() {
+	var well = jFindObjectByName("terobjs/well", 45);
+	jObjectOffsetMove(well.getID(), jCoord(-3 * 11, -3*11));
+	jWaitMove(actionTimeout);
+}
+
+function waitSitting() {
+	var me = jGob(jGetMyID());
+	while (!me.isSitting()) {
+		jSleep(100);
+	}
+}
+
+function waitInventory(wnd, index) {
+	while (wnd.getInventories()[index] == null) {
+		jSleep(100);
+	}
+	return wnd.getInventories()[index];
+}
+
+function eatFromTable() {
+	var table = jFindObjectByName("table", 11);	
+	jDropLastWindow();
+	jDoClick(table.getID(), 3, 0);
+	var table_wnd = jWaitNewWindow("Table", actionTimeout);
+	waitInventory(table_wnd, 1);
+	//jSleep(2000);
+	var table_inv = table_wnd.getInventories()[1];
+	
+	if (inventory.getItems(foodName).length > 0) {
+		inventory.getItems(foodName)[0].transferSuchAll();
+	}
+	table_wnd.pushButton("Feast!");
+	while (!jIsCursor("eat")) jSleep(100);
+	while (true) {
+		var food = table_inv.getItems("");
+		if (jGetHungry() > 98) return;
+		if (food.length == 0) {
+			resetCursor();
+			return;
+		}
+		for (var i = 0; i < food.length; i++) {
+			if (food[i].isActual()) {
+				food[i].take();
+				jWaitProgress(actionTimeout);
+				if (jGetHungry() > 98) return;
+			}
+		}
+	}
+}
+
+function getFood() {
+	for (var i = 0; i < chests.length; i++) {
+		//if (chest_status[i] == 0) {
+			jObjectOffsetMove(chests[i].getID(), jCoord(-3*11, 0));
+			jWaitMove(actionTimeout);
+			
+			jDropLastWindow();
+			jDoClick(chests[i].getID(), 3, 0);
+			var chest_wnd = jWaitNewWindow("Chest", actionTimeout);
+			var inv = waitInventory(chest_wnd, 0);
+			if (inv.getItems(foodName).length > 0) {
+				inv.getItems(foodName)[0].transferSuchAll();
+			}
+			if (inv.getItems(foodName).length == 0) {
+				chest_status[i] = 1;
+			}
+			jObjectOffsetMove(chests[i].getID(), jCoord(-1*11, 0));
+			jWaitMove(actionTimeout);
+			
+			if (inventory.freeSlots() == 0) break;
+		//}
+	}
+}
+
+function checkBuff() {
+	var inventory = checkInventory();
+	var buffs = jGetBuffs();
+	var need_update = true;
+	for (var i = 0; i < buffs.length; i++) {
+		if (buffs[i].name().indexOf("In the Fog") >= 0) {
+			if (buffs[i].time() > 25) {
+				need_update = false;
+			}
+		}
+	}
+	if (need_update) {
+		var hemps = inventory.getItems("hemp-cured");
+		if (hemps.length > 0) {
+			inventory.sortItems(hemps, "amount", true);
+			var hemp = hemps[0];
+			var equip = checkEquipment();
+			if (equip.resName(1).indexOf("pipe") >= 0) {
+				hemp.take();
+				jWaitDrag(actionTimeout);
+				equip.itemact(1);
+				jWaitDrop(actionTimeout);
+				equip.iact(1);
+				if (jWaitPopup(actionTimeout)) {
+					jSelectContextMenu("Light");
+				}
+			}
+		}
+	}
+}
+
+function main()
+{
+//	while (true)
+//	{
+//		var chest = jSelectObject("Select chest...");
+//		if (chest == null) break;
+//		if(chest.name().indexOf("chest") != -1) {
+//			chests.push(chest);
+//			chest_status.push(0);
+//		}
+//	}
+	while (true)
+	{
+//		checkBuff();
+//		move_to_cp();
+//		starv();
+//		move_to_cp();
+//		getFood();
+//		move_to_cp();
+//		jDoClick(jFindObjectByName("chair", 45).getID(), 3, 0);
+//		waitSitting();
+		eatFromTable();
+		jSleep(10*600*1000);
+	}
+}
+
+main();

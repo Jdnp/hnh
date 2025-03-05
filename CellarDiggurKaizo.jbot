@@ -1,0 +1,54 @@
+//#! uniq = CELLARDIGGERBOT
+//#! tooltip = K
+//#! name = Cellar digger
+//#! icon = paginae/build/cellardoor
+
+include("jBotAPI");
+
+function main()
+{
+	checkInventory();
+	while(1)
+	{
+		if(jGetHungry() < 55) return;
+
+		var cd = jFindObjectByName("door-cellar", 5);
+		if(cd == null) break;
+		cd.doClick(3, 0);
+
+		var digged = false;
+		while(1)
+		{
+			if(jFindObjectByName("bumlings/02", 3) != null) break;
+			if(jFindObjectByName("stairs", 0) != null) // 3)
+			{
+				digged = true;
+				break;
+			}
+			jSleep(500);
+		}
+		if(digged) return;
+		jOffsetClick(jCoord(0, 1), 0, 1);
+		jWaitMove();
+		if(jGetStamina() < 40) drinkWater();
+
+		var bum = jFindObjectByName("bumlings/02", 5);
+		jSendDoubleAction("swrk", "runestone");
+		jWaitCursor("chi", 20000);
+		bum.doClick(1, 0);
+		while(jFindObjectByName("bumlings/02", 3) != null) jSleep(3000);
+		if(jGetStamina() < 40) drinkWater();
+		while(jFindObjectByName("runestone", 3) != null)
+		{
+			jSendAction("destroy");
+			jWaitCursor("mine", 20000);
+			var rs = jFindObjectByName("runestone", 3);
+			rs.doClick(1, 0);
+			jWaitProgress(90000);
+			if(jGetStamina() < 40) drinkWater();
+			jSleep(500);
+		}
+	}
+}
+
+main();

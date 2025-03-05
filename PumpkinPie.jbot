@@ -1,0 +1,586 @@
+//#! uniq = PUMPKINPIE
+//#! tooltip = Pie factory
+//#! name = Pumpkin Pie
+//#! icon = gfx/terobjs/oven
+
+include("jBotAPI");
+
+function Finish(itext)
+{
+	jPrint("Exit - "+itext);
+	jExit();
+}
+
+function DropFromCursor()
+{
+	while (jIsDragging())
+	{
+		jDropObject(0);
+		jSleep(300);
+	}
+}
+
+//---------------------------------------------------------------------
+// burn pies
+//---------------------------------------------------------------------
+function GetChest(radius, offset)
+{
+	var obj = jFindObjectWithOffset("/cclosed", radius, offset);
+	if (obj == null) return null;
+	obj.doClick(3, 0);
+	while (!jHaveWindow("Chest")) jSleep(300);
+	return obj;
+}
+function GetLC(radius, offset)
+{
+	var obj = jFindObjectWithOffset("/lchest", radius, offset);
+	if (obj == null) return null;
+	obj.doClick(3, 0);
+	while (!jHaveWindow("Chest")) jSleep(300);
+	return obj;
+}
+function GetOven(radius, offset)
+{
+	var obj = jFindObjectWithOffset("/oven", radius, offset);
+	if (obj == null) return null;
+	obj.doClick(3, 0);
+	while (!jHaveWindow("Oven")) jSleep(300);
+	return obj;
+}
+
+function BurnPies(delay)
+{
+	var fuelChestsOffset = [-1, 0];
+	var doughChestsOffset = [1, 0];
+	var shitChestsOffset = [1, 0];
+	var ovensOffset =
+	[
+		[0, -2],
+
+		[0, 2],
+		[0, -2],
+
+		[0, 2],
+		[0, -2],
+
+		[0, 2],
+	];	
+
+	var fuelChestsWaypoint =	[1, 8];
+	var doughChestsWaypoint = [7, 4];
+	var shitChestsWaypoint = [1, 9];
+	var ovensWaypoints =
+	[
+		[[0, -8], [-2, -8]],
+
+		[[0, -8], [-2, -8]],
+		[[0, -1], [-2, -1]],
+
+		[[0, 0], [-2, 0]],
+		[[0, 7], [-2, 7]],
+
+		[[0, 7], [-2, 7]],
+	];
+	var ovensReturnWaypoints =
+	[
+		[0, -8],
+
+		[0, -8],
+		[0, -1],
+
+		[0, 0],
+		[0, 7],
+
+		[0, 7],
+	];
+
+	var crossroadOffset = [-4*11, -5*11];
+
+	var fuelChestsCount = 3;
+	var doughChestsCount = 8;
+	var shitChestsCount = 2;
+	var ovensCount = 4;
+
+	var fuelMoveDir = jCoord(0, 1*11);
+	var doughMoveDir = jCoord(0, -1*11);
+	var shitMoveDir = jCoord(0, 1*11);
+	var ovensMoveDir = jCoord(-3*11, 0);
+
+ 	var inv = checkInventory();
+	if (inv.freeSlots() < 48)
+	{
+		Finish("must be at least 48 free space in inventory");
+	}
+	if (inv.size().x*inv.size().y != inv.freeSlots())
+	{
+		Finish("inventory must be empty");
+	}
+
+	jSetSpeed(2);
+
+	// positioning
+	var cr = jFindObjectByName("crossroads", 10);
+	if (cr == null) Finish("no crossroad O_o");
+
+	var initPos = jCoord(cr.position().x + crossroadOffset[0], cr.position().y + crossroadOffset[1]);
+	MoveToPosSafe(initPos);
+
+	// burn old shit
+	var shitCount = 0;
+	var needBurnShit = false;
+	DropFromCursor();
+	for (var n = 0; n < 6; n++)
+	{
+		for (var k = 0; k < 2; k++)
+		{
+			MoveToPosSafe(jCoord(initPos.x + ovensWaypoints[n][k][0]*11, initPos.y + ovensWaypoints[n][k][1]*11));
+		}
+		var startPos = jCoord(initPos.x + ovensWaypoints[n][1][0]*11, initPos.y + ovensWaypoints[n][1][1]*11);
+
+		for (var k = 0; k < ovensCount; k++)
+		{
+			// go to oven k
+			var pos = jCoord(startPos.x + k*ovensMoveDir.x, startPos.y + k*ovensMoveDir.y);
+			MoveToPosSafe(pos);
+
+			// burn oven
+			var oven = GetOven(1, jCoord(ovensOffset[n][0], ovensOffset[n][1]));
+			if (oven == null) continue;
+
+			var wndOven = jGetWindow("Oven");
+			var ovenInv = wndOven.getInventories()[0];
+			shitCount = shitCount + ovenInv.getItems("/").length;
+
+			if (parseInt(oven.blob(0)) != 2) needBurnShit = true;
+
+			if (parseInt(oven.blob(0)) == 66)
+			{
+				var wndOven = jGetWindow("Oven");
+				while (true)
+				{
+					wndOven.pushButton("Light");
+
+					var blob0 = parseInt(oven.blob(0));
+					if ((blob0 == 70) || (blob0 == 78)) break;  // 66 - no burn with fuel, 78 - burn with pies, 70 - burn without pies
+					jSleep(300);
+				}
+			}
+		}
+		MoveToPosSafe(jCoord(initPos.x + ovensReturnWaypoints[n][0]*11, initPos.y + ovensReturnWaypoints[n][1]*11));
+	}
+	MoveToPosSafe(initPos);
+
+
+	if (needBurnShit)
+	{
+		// wait until all burn
+		for (var n = 0; n < 6; n++)
+		{
+			for (var k = 0; k < 2; k++)
+			{
+				MoveToPosSafe(jCoord(initPos.x + ovensWaypoints[n][k][0]*11, initPos.y + ovensWaypoints[n][k][1]*11));
+			}
+			var startPos = jCoord(initPos.x + ovensWaypoints[n][1][0]*11, initPos.y + ovensWaypoints[n][1][1]*11);
+
+			for (var k = 0; k < ovensCount; k++)
+			{
+				// go to oven k
+				var pos = jCoord(startPos.x + k*ovensMoveDir.x, startPos.y + k*ovensMoveDir.y);
+				MoveToPosSafe(pos);
+
+				var oven = GetOven(1, jCoord(ovensOffset[n][0], ovensOffset[n][1]));
+				if (oven == null) continue;
+				while (parseInt(oven.blob(0)) != 2) jSleep(10*1000);
+			}
+			MoveToPosSafe(jCoord(initPos.x + ovensReturnWaypoints[n][0]*11, initPos.y + ovensReturnWaypoints[n][1]*11));
+		}
+		MoveToPosSafe(initPos);
+	}
+
+	if (shitCount > 0)
+	{
+	for (var i = 0; i < 2; i++)
+	{
+		// take old shit
+		for (var n = i*3; n < (i+1)*3; n++)
+		{
+			for (var k = 0; k < 2; k++)
+			{
+				MoveToPosSafe(jCoord(initPos.x + ovensWaypoints[n][k][0]*11, initPos.y + ovensWaypoints[n][k][1]*11));
+			}
+			var startPos = jCoord(initPos.x + ovensWaypoints[n][1][0]*11, initPos.y + ovensWaypoints[n][1][1]*11);
+
+			for (var k = 0; k < ovensCount; k++)
+			{
+				// go to oven k
+				var pos = jCoord(startPos.x + k*ovensMoveDir.x, startPos.y + k*ovensMoveDir.y);
+				MoveToPosSafe(pos);
+
+				// unload oven
+				var oven = GetOven(1, jCoord(ovensOffset[n][0], ovensOffset[n][1]));
+				if (oven == null) continue;
+				while (parseInt(oven.blob(0)) != 2) jSleep(5*1000);
+
+				var wndOven = jGetWindow("Oven");
+
+				var ovenInv = wndOven.getInventories()[0];
+				var ovenItems = ovenInv.getItems("/");
+				var allCount = ovenItems.length;
+		 		
+				for (var s = 0; s < allCount; s++)
+				{
+					ovenItems[s].transfer();
+				}
+				while (ovenInv.getItems("/").length > 0) jSleep(300);
+			}
+			MoveToPosSafe(jCoord(initPos.x + ovensReturnWaypoints[n][0]*11, initPos.y + ovensReturnWaypoints[n][1]*11));
+		}
+		MoveToPosSafe(initPos);
+
+		// move old shit to chest
+		var startPos = jCoord(initPos.x + shitChestsWaypoint[0]*11, initPos.y + shitChestsWaypoint[1]*11);
+		for (var n = 0; n < shitChestsCount; n++)
+		{
+			var pos = jCoord(startPos.x + n*shitMoveDir.x, startPos.y + n*shitMoveDir.y);
+			MoveToPosSafe(pos);
+
+			var lcShit = GetLC(3, jCoord(shitChestsOffset[0], shitChestsOffset[1]));
+			if (lcShit == null) continue;
+
+			var wndShit = jGetWindow("Chest");
+			var chestInv = wndShit.getInventories()[0];
+			var chestFreeCount = chestInv.freeSlots();
+
+			var inv = checkInventory();
+			var allItems = inv.getItems("/");
+			var allCount = allItems.length;
+			if (allCount == 0) break;
+
+			var transferCount = Math.min(chestFreeCount, allCount);
+
+			for (var s = 0; s < transferCount; s++)
+			{
+				allItems[s].transfer();
+			}
+			while (inv.getItems("/").length > (allCount - transferCount)) jSleep(300);
+		}
+		MoveToPosSafe(initPos);
+	}
+	}
+
+	//============================	
+
+	// burn all
+	var noMoreDough = false;
+	mainLoop:
+	while (true)
+	{
+
+	if (noMoreDough) break;
+
+	for (var i = 0; i < 2; i++)
+	{
+		// take dough
+		var startPos = jCoord(initPos.x + doughChestsWaypoint[0]*11, initPos.y + doughChestsWaypoint[1]*11);
+		var doughInPackCount = 0;
+		for (var n = 0; n < doughChestsCount; n++)
+		{
+			var pos = jCoord(startPos.x + n*doughMoveDir.x, startPos.y + n*doughMoveDir.y);
+			MoveToPosSafe(pos);
+
+			var lcDough = GetLC(3, jCoord(doughChestsOffset[0], doughChestsOffset[1]));
+			if (lcDough == null) continue;
+
+			var wndDough = jGetWindow("Chest");
+			var chestInv = wndDough.getInventories()[0];
+
+			var doughItems = chestInv.getItems("dough");
+			var doughCount = doughItems.length;
+			var transferCount = Math.min(48 - doughInPackCount, doughCount);
+
+			doughInPackCount = doughInPackCount + transferCount;
+
+			for (var k = 0; k < transferCount; k++)
+			{
+				doughItems[k].transfer();
+			}
+			while (chestInv.getItems("dough").length > (doughCount - transferCount)) jSleep(300);
+
+			if (doughInPackCount == 48) break;
+		}
+		MoveToPosSafe(initPos);
+
+
+		if (checkInventory().getItems("dough").length == 0)
+		{
+			noMoreDough = true;
+			if (i == 0) continue mainLoop;
+			else break;
+		}
+
+
+    // dough to ovens
+		for (var n = i*3; n < (i+1)*3; n++)
+		{
+			for (var k = 0; k < 2; k++)
+			{
+				MoveToPosSafe(jCoord(initPos.x + ovensWaypoints[n][k][0]*11, initPos.y + ovensWaypoints[n][k][1]*11));
+			}
+			var startPos = jCoord(initPos.x + ovensWaypoints[n][1][0]*11, initPos.y + ovensWaypoints[n][1][1]*11);
+
+			for (var k = 0; k < ovensCount; k++)
+			{
+				// go to oven k
+				var pos = jCoord(startPos.x + k*ovensMoveDir.x, startPos.y + k*ovensMoveDir.y);
+				MoveToPosSafe(pos);
+
+				// load oven
+				var inv = checkInventory();
+				var doughItems = inv.getItems("dough");
+				var doughCount = doughItems.length;
+				if (doughCount == 0) break;
+				var transferCount = Math.min(4, doughCount);
+
+				var oven = GetOven(1, jCoord(ovensOffset[n][0], ovensOffset[n][1]));
+				if (oven == null) continue;
+
+				for (var s = 0; s < transferCount; s++)
+				{
+					doughItems[s].transfer();
+				}
+				while (inv.getItems("dough").length > (doughCount - transferCount)) jSleep(300);
+			}
+			MoveToPosSafe(jCoord(initPos.x + ovensReturnWaypoints[n][0]*11, initPos.y + ovensReturnWaypoints[n][1]*11));
+		}
+		MoveToPosSafe(initPos);
+
+			
+		// take branches
+		var fuelNeed = doughInPackCount/4;
+		if (fuelNeed*4 < doughInPackCount) fuelNeed++;
+		var fuelInPackCount = 0;
+		var startPos = jCoord(initPos.x + fuelChestsWaypoint[0]*11, initPos.y + fuelChestsWaypoint[1]*11);
+		for (var n = 0; n < fuelChestsCount; n++)
+		{
+			var pos = jCoord(startPos.x + n*fuelMoveDir.x, startPos.y + n*fuelMoveDir.y);
+			MoveToPosSafe(pos);
+
+			var chestFuel = GetChest(3, jCoord(fuelChestsOffset[0], fuelChestsOffset[1]));
+			if (chestFuel == null) continue;
+
+			var wndFuel = jGetWindow("Chest");
+			var chestInv = wndFuel.getInventories()[0];
+
+			var fuelItems = chestInv.getItems("branch");
+			var fuelCount = fuelItems.length;
+			var transferCount = Math.min(fuelNeed - fuelInPackCount, fuelCount);
+
+			fuelInPackCount = fuelInPackCount + transferCount;
+	
+			for (var k = 0; k < transferCount; k++)
+			{
+				fuelItems[k].transfer();
+			}
+			while (chestInv.getItems("branch").length > (fuelCount - transferCount)) jSleep(300);
+
+			if (fuelInPackCount == fuelNeed) break;
+		}
+		MoveToPosSafe(initPos);
+
+
+		if (checkInventory().getItems("branch").length < fuelNeed)
+		{
+			jLogout();
+			Finish("not enough fuel. stoped.");
+		}
+
+
+		// branches to ovens
+		DropFromCursor();
+		for (var n = i*3; n < (i+1)*3; n++)
+		{
+			for (var k = 0; k < 2; k++)
+			{
+				MoveToPosSafe(jCoord(initPos.x + ovensWaypoints[n][k][0]*11, initPos.y + ovensWaypoints[n][k][1]*11));
+			}
+			var startPos = jCoord(initPos.x + ovensWaypoints[n][1][0]*11, initPos.y + ovensWaypoints[n][1][1]*11);
+
+			for (var k = 0; k < ovensCount; k++)
+			{
+				// go to oven k
+				var pos = jCoord(startPos.x + k*ovensMoveDir.x, startPos.y + k*ovensMoveDir.y);
+				MoveToPosSafe(pos);
+
+				// load oven
+				var inv = checkInventory();
+				var fuelItems = inv.getItems("branch");
+				var fuelCount = fuelItems.length;
+				if (fuelCount == 0) break;
+
+				var oven = jFindObjectWithOffset("/oven", 1, jCoord(ovensOffset[n][0], ovensOffset[n][1]));
+				if (oven == null) continue;
+
+				// take branch
+				fuelItems[0].take();
+				while (!jIsDragging()) jSleep(300);
+
+				oven.interactClick(0);
+				while (jIsDragging()) jSleep(300);
+			}
+			MoveToPosSafe(jCoord(initPos.x + ovensReturnWaypoints[n][0]*11, initPos.y + ovensReturnWaypoints[n][1]*11));
+		}
+		MoveToPosSafe(initPos);
+	}
+
+
+	jSleep(delay);
+
+
+	// burn
+	DropFromCursor();
+	for (var n = 0; n < 6; n++)
+	{
+		for (var k = 0; k < 2; k++)
+		{
+			MoveToPosSafe(jCoord(initPos.x + ovensWaypoints[n][k][0]*11, initPos.y + ovensWaypoints[n][k][1]*11));
+		}
+		var startPos = jCoord(initPos.x + ovensWaypoints[n][1][0]*11, initPos.y + ovensWaypoints[n][1][1]*11);
+
+		for (var k = 0; k < ovensCount; k++)
+		{
+			// go to oven k
+			var pos = jCoord(startPos.x + k*ovensMoveDir.x, startPos.y + k*ovensMoveDir.y);
+			MoveToPosSafe(pos);
+
+			// burn oven
+			var oven = GetOven(1, jCoord(ovensOffset[n][0], ovensOffset[n][1]));
+			if (oven == null) continue;
+
+			if (parseInt(oven.blob(0)) == 66)
+			{
+				var wndOven = jGetWindow("Oven");
+				while (true)
+				{
+					wndOven.pushButton("Light");
+
+					var blob0 = parseInt(oven.blob(0));
+					if ((blob0 == 70) || (blob0 == 78)) break;  // 66 - no burn with fuel, 78 - burn with pies, 70 - burn without pies
+					jSleep(300);
+				}
+			}
+		}
+		MoveToPosSafe(jCoord(initPos.x + ovensReturnWaypoints[n][0]*11, initPos.y + ovensReturnWaypoints[n][1]*11));
+	}
+	MoveToPosSafe(initPos);
+
+
+	jSleep(5*60*1000);
+
+
+	for (var i = 0; i < 2; i++)
+	{
+		// take pies
+		for (var n = i*3; n < (i+1)*3; n++)
+		{
+			for (var k = 0; k < 2; k++)
+			{
+				MoveToPosSafe(jCoord(initPos.x + ovensWaypoints[n][k][0]*11, initPos.y + ovensWaypoints[n][k][1]*11));
+			}
+			var startPos = jCoord(initPos.x + ovensWaypoints[n][1][0]*11, initPos.y + ovensWaypoints[n][1][1]*11);
+
+			for (var k = 0; k < ovensCount; k++)
+			{
+				// go to oven k
+				var pos = jCoord(startPos.x + k*ovensMoveDir.x, startPos.y + k*ovensMoveDir.y);
+				MoveToPosSafe(pos);
+
+				// unload oven
+				var oven = GetOven(1, jCoord(ovensOffset[n][0], ovensOffset[n][1]));
+				if (oven == null) continue;
+				while (parseInt(oven.blob(0)) != 2) jSleep(5*1000);
+
+				var wndOven = jGetWindow("Oven");
+
+				var ovenInv = wndOven.getInventories()[0];
+				var ovenItems = ovenInv.getItems("/");
+				var allCount = ovenItems.length;
+		 		
+				for (var s = 0; s < allCount; s++)
+				{
+					ovenItems[s].transfer();
+				}
+				while (ovenInv.getItems("/").length > 0) jSleep(300);
+			}
+			MoveToPosSafe(jCoord(initPos.x + ovensReturnWaypoints[n][0]*11, initPos.y + ovensReturnWaypoints[n][1]*11));
+		}
+		MoveToPosSafe(initPos);
+
+
+		// pies to chests
+		var startPos = jCoord(initPos.x + doughChestsWaypoint[0]*11, initPos.y + doughChestsWaypoint[1]*11);
+		var doughInPackCount = 0;
+		for (var n = 0; n < doughChestsCount; n++)
+		{
+			var pos = jCoord(startPos.x + n*doughMoveDir.x, startPos.y + n*doughMoveDir.y);
+			MoveToPosSafe(pos);
+
+			var lcDough = GetLC(3, jCoord(doughChestsOffset[0], doughChestsOffset[1]));
+			if (lcDough == null) continue;
+
+			var wndDough = jGetWindow("Chest");
+			var chestInv = wndDough.getInventories()[0];
+			var chestFreeCount = chestInv.freeSlots();
+
+			var inv = checkInventory();
+			var allItems = inv.getItems("/");
+			var allCount = allItems.length;
+			if (allCount == 0) break;
+
+			var transferCount = Math.min(chestFreeCount, allCount);
+
+			for (var s = 0; s < transferCount; s++)
+			{
+				allItems[s].transfer();
+			}
+			while (inv.getItems("/").length > (allCount - transferCount)) jSleep(300);
+		}
+		MoveToPosSafe(initPos);
+	}
+	
+	}
+	jLogout();
+	Finish("done. all pies ready.");
+}
+
+
+//---------------------------------------------------------------------
+function main()
+{
+	var modeList = ["0 min", "6 min", "11 min", "17 min"];
+	var modeDesc = ["Honey Bun", "Carrot Cake, Raisin Butter-Cake", "All Other", "Bark Bread, Pumpkin Bread, Shewbread"];
+
+	var modeWnd = jGUIWindow(jCoord(250, 250), jCoord(210, 20 + modeList.length*60+40), "Pumpkin Pie");
+	for (var n = 0; n < modeList.length; n++)
+	{
+		jGUILabel(modeWnd, jCoord(10, 10 + n*60), modeDesc[n]);
+		jGUIButton(modeWnd, jCoord(10, 30 + n*60), 190, modeList[n]);
+	}	
+	jGUIButton(modeWnd, jCoord(45, 10 + modeList.length*60 + 20), 120, "Exit");
+	modeWnd.toggleCloseButton();
+	var modeText = modeWnd.waitButtonClick();
+	modeWnd.destroy();
+	if (modeText == "Exit") return;
+
+	var delay = -1;
+	if (modeText == modeList[0]) delay = 0;
+	if (modeText == modeList[1]) delay = 6;
+	if (modeText == modeList[2]) delay = 11;
+	if (modeText == modeList[3]) delay = 17;
+
+	if (delay == -1) Finish("gui error");
+	{
+		BurnPies(delay*60*1000);
+	}
+}
+
+main();

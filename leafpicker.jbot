@@ -1,0 +1,579 @@
+//#! tooltip = Takes leafs from mulberry
+//#! name = Leaf picker
+//#! uniq = MULBERRYLEAFPICKERBOT--
+//#! icon = gfx/invobjs/mulberryleaf
+
+var scriptName = "Leaf Picker";
+var version = 1;
+
+//opens inventory
+function checkInventory() {
+	if(!jHaveWindow("Inventory"))
+	{
+		jToggleInventory();
+		while(!jHaveWindow("Inventory"))
+			jSleep(100);
+	}
+}
+
+//select where starts from
+function setCupNumber()
+{
+	var widget = jGetInputWidget(250, 200, "Input cup number", "Cup number start from:");
+	if(widget == null)
+		return 1;
+	if(!widget.waitForPress(20000))
+	{
+		if(widget != null)
+			widget.close();
+		return 1;
+	}
+	else
+	{
+		var ret = widget.intValue();
+		if(ret == 0) ret = 1;
+		widget.close();
+		return ret;
+	}
+	return 1;
+}
+
+//picks leafs; full inventory
+function pickLeafs()
+{
+	//finding mulberry
+	var mulberry = jFindObjectByName("/trees/mberry", 4);
+	//if no mulberry - returns
+	if(mulberry == null)
+		return;
+	//RMB at mulberry
+	mulberry.doClick(3, 0);
+	//waits for popup
+	jWaitPopup();
+	jSleep(200);
+	jSelectContextMenu("Pick leaf");
+	//waiting for full pack of leafs
+	while(!jIsDragging())
+		jSleep(3000);
+	//drops leaf at cursor
+	jSleep(100);
+	//waits last progress
+	jWaitEndProgress();
+	//drops leaf to the ground
+	jDropObject(0);
+	//waits drop
+	jWaitDrop(20000);
+}
+
+//checks for leafs at inventry
+function haveLeafs()
+{
+	if(jGetWindow("Inventory").getInventories()[0].getItems("mulberryleaf").length > 0)
+		return true;
+	return false;
+}
+
+//going to cellar
+function gotoHouse(cup)
+{
+	var cellar = null;
+	var stairs = null;
+	var door = null;
+	if(cup < 42)
+	{
+		door = jFindObjectByName("door-inn", 20);
+		//if no door - returns
+		if(door == null)
+			return;
+		//RMB at door
+		door.doClick(3, 0);
+		while(cellar == null)
+		{
+			//finding cellar
+			cellar = jFindObjectByName("door-cellar", 20);
+			jSleep(200);
+		}
+		//RMB at cellar door
+		cellar.doClick(3, 0);
+		while(stairs == null)
+		{
+			//finding cellar
+			stairs = jFindObjectByName("stairs-cellar", 20);
+			jSleep(200);
+		}
+	}//42
+	if(cup > 41 && cup < 60)
+	{
+		door = jFindObjectByName("door-inn", 20);
+		//if no door - returns
+		if(door == null)
+			return;
+		door.doClick(3, 0);
+		while(jGetTileType(jCoord(0, 0)) != 21)
+			jSleep(100);
+	}//42-59
+	if(cup > 59)
+	{
+		//finding door
+		door = jFindObjectByName("door-inn", 20);
+		//if no door - returns
+		if(door == null)
+			return;
+		//RMB at door
+		door.doClick(3, 0);
+		while(cellar == null)
+		{
+			//finding stairs to the roof
+			cellar = jFindObjectByName("stairs-inn", 20);
+			jSleep(200);
+		}
+		//RMB at stairs
+		cellar.doClick(3, 0);
+		while(stairs == null)
+		{
+			//finding downstairs
+			stairs = jFindObjectByName("stairs-inn-d", 20);
+			jSleep(200);
+		}
+	}//60+
+	jSleep(100);
+}
+
+//going to street
+function gotoStreet(cup)
+{
+	var door = null;
+	var house = null;
+	//finding stairs
+	var stairs = null;
+	if(cup < 42)
+	{
+		stairs = jFindObjectByName("stairs-cellar", 20);
+		if(stairs == null)
+			return;
+		stairs.doClick(3, 0);
+		while(door == null)
+		{
+			//finding door
+			door = jFindObjectByName("door-inn", 20);
+			jSleep(200);
+		}
+		door.doClick(3, 0);
+		while(house == 0)
+		{
+			//finding house
+			house = jFindObjectByName("/inn", 7);
+			jSleep(200);
+		}
+	}//42
+	if(cup > 41 && cup < 60)
+	{
+		door = jFindObjectByName("door-inn", 20);
+		if(door == null)
+			return;
+		door.doClick(3, 0);
+		while(house == null)
+		{
+			//finding house
+			house = jFindObjectByName("/inn", 7);
+			jSleep(200);
+		}
+	}//42-59
+	if(cup > 59)
+	{
+		stairs = jFindObjectByName("stairs-inn-d", 20);
+		if(stairs == null)
+			return;
+		stairs.doClick(3, 0);
+		while(door == null)
+		{
+			//finding door
+			door = jFindObjectByName("door-inn", 20);
+			jSleep(200);
+		}
+		door.doClick(3, 0);
+		while(house == null)
+		{
+			//finding house
+			house = jFindObjectByName("/inn", 7);
+			jSleep(200);
+		}
+	}//60+
+	jSleep(100);
+}
+
+//fills given cupboard with leaves
+function fillCup(sidex, sidey)
+{
+	var cupboard = jFindObjectWithOffset("cupboard", 7, jCoord(sidex, sidey));
+	if(cupboard == null)
+		return false;
+	//opens cup; RMB
+	cupboard.doClick(3, 0);
+	//waits for opening cup
+	jWaitNewWindow("Cupboard", 60000);
+	//getting invs
+	var myInv = jGetWindow("Inventory").getInventories()[0];
+	var cupInv;
+	if(jHaveWindow("Cupboard")) cupInv = jGetWindow("Cupboard").getInventories()[0];
+	var silkworms = cupInv.getItems("silk"); //warms & cocoons
+	var cupleafs = cupInv.getItems("leaf");
+	var count = 0;
+	if(silkworms.length > 0)
+	{
+		leafs = myInv.getItems("leaf");
+		count = 4 * silkworms.length;
+		if(cupleafs.length > 0) count = count - cupleafs.length;
+	}
+	else
+	{
+		leafs = myInv.getItems("leaf");
+		var free = cupInv.freeSlots();
+		if(free > 48)
+			count = 48 - cupleafs.length;
+		if(free > 16 && free < 48)
+			count = free - 16;
+		if(free <= 16)
+			count = 0;
+	}
+	if(leafs.length < count)
+		count = leafs.length;
+	for(var i = 0; i < count; i++)
+		leafs[i].transfer();
+	jSleep(200);
+	return true;
+}
+
+//moves to given cup
+function moveToCup(cup)
+{
+	if(cup < 1)
+		return;
+	if(cup >= 1 && cup <= 11)
+	{
+		jMoveStep(jCoord(cup, 0));
+		jWaitMove(60000);
+	}
+	if(cup >= 12 && cup <= 20)
+	{
+		jMoveStep(jCoord(2, 1));
+		jWaitMove(60000);
+		jMoveStep(jCoord(cup - 11, 0));
+		jWaitMove(60000);
+	}
+	if(cup >= 21 && cup <= 29)
+	{
+		jMoveStep(jCoord(2, 4));
+		jWaitMove(60000);
+		jMoveStep(jCoord(cup - 20, 0));
+		jWaitMove(60000);
+	}
+	if(cup >= 30 && cup <= 41)
+	{
+		jMoveStep(jCoord(0, 5));
+		jWaitMove(60000);
+		if(cup != 30) {jMoveStep(jCoord(cup - 30, 0));
+		jWaitMove(60000); }//30
+	}
+	if(cup >= 42 && cup <= 45)
+	{
+		jMoveStep(jCoord(-3, 0));
+		jWaitMove(60000);
+		if(cup != 42) {jMoveStep(jCoord(0, -(cup - 42)));
+		jWaitMove(60000); }//42
+	}
+	if(cup >= 46 && cup <= 49)
+	{
+		jMoveStep(jCoord(-2, -3));
+		jWaitMove(60000);
+		jMoveStep(jCoord(0, -(cup - 45)));
+		jWaitMove(60000);
+	}
+	if(cup >= 50 && cup <= 53)
+	{
+		jMoveStep(jCoord(1, -3));
+		jWaitMove(60000);
+		jMoveStep(jCoord(0, -(cup - 49)));
+		jWaitMove(60000);
+	}
+	if(cup >= 54 && cup <= 59)
+	{
+		jMoveStep(jCoord(2, -1));
+		jWaitMove(60000);
+		jMoveStep(jCoord(0, -(cup - 53)));
+		jWaitMove(60000);
+	}
+	if(cup >= 60 && cup <= 63)
+	{
+		jMoveStep(jCoord(1, 1));
+		jWaitMove(60000);
+		jMoveStep(jCoord(0, cup - 59));
+		jWaitMove(60000);
+	}
+	if(cup >= 64 && cup <= 68)
+	{
+		jMoveStep(jCoord(2, 0));
+		jWaitMove(60000);
+		jMoveStep(jCoord(0, cup - 63));
+		jWaitMove(60000);
+	}
+	if(cup >= 69 && cup <= 73)
+	{
+		jMoveStep(jCoord(5, 0));
+		jWaitMove(60000);
+		jMoveStep(jCoord(0, cup - 68));
+		jWaitMove(60000);
+	}
+	if(cup >= 74 && cup <= 78)
+	{
+		jMoveStep(jCoord(6, 0));
+		jWaitMove(60000);
+		jMoveStep(jCoord(0, cup - 73));
+		jWaitMove(60000);
+	}
+	if(cup >= 79 && cup <= 85)
+	{
+		jMoveStep(jCoord(1, 0));
+		jWaitMove(60000);
+		jMoveStep(jCoord(0, -1));
+		jWaitMove(60000);
+		if(cup != 79) {jMoveStep(jCoord(cup - 79, 0));
+		jWaitMove(60000);}
+	}
+	jSleep(150);
+}
+
+//goto def
+function gotoDefault(cup)
+{
+	if(cup < 1)
+		return;
+	if(cup >= 1 && cup <= 11)
+	{
+		jMoveStep(jCoord(-cup, 0));
+		jWaitMove(60000);
+	}
+	if(cup >= 12 && cup <= 20)
+	{
+		jMoveStep(jCoord(-(cup - 11), 0));
+		jWaitMove(60000);
+		jMoveStep(jCoord(-2, -1));
+		jWaitMove(60000);
+	}
+	if(cup >= 21 && cup <= 29)
+	{
+		jMoveStep(jCoord(-(cup - 20), 0));
+		jWaitMove(60000);
+		jMoveStep(jCoord(-2, -4));
+		jWaitMove(60000);
+	}
+	if(cup >= 30 && cup <= 41)
+	{
+		if(cup != 30) {jMoveStep(jCoord(-(cup - 30), 0));
+		jWaitMove(60000); }//30
+		jMoveStep(jCoord(0, -5));
+		jWaitMove(60000);
+	}
+	if(cup >= 42 && cup <= 45)
+	{
+		if(cup != 42) {jMoveStep(jCoord(0, cup - 42));
+		jWaitMove(60000); }//42
+		jMoveStep(jCoord(3, 0));
+		jWaitMove(60000);
+	}
+	if(cup >= 46 && cup <= 49)
+	{
+		jMoveStep(jCoord(0, cup - 45));
+		jWaitMove(60000);
+		jMoveStep(jCoord(2, 3));
+		jWaitMove(60000);
+	}
+	if(cup >= 50 && cup <= 53)
+	{
+		jMoveStep(jCoord(0, cup - 49));
+		jWaitMove(60000);
+		jMoveStep(jCoord(-1, 3));
+		jWaitMove(60000);
+	}
+	if(cup >= 54 && cup <= 59)
+	{
+		jMoveStep(jCoord(0, cup - 53));
+		jWaitMove(60000);
+		jMoveStep(jCoord(-2, 1));
+		jWaitMove(60000);
+	}
+	if(cup >= 60 && cup <= 63)
+	{
+		jMoveStep(jCoord(0, -(cup - 59)));
+		jWaitMove(60000);
+		jMoveStep(jCoord(-1, -1));
+		jWaitMove(60000);
+	}
+	if(cup >= 64 && cup <= 68)
+	{
+		jMoveStep(jCoord(0, -(cup - 63)));
+		jWaitMove(60000);
+		jMoveStep(jCoord(-2, 0));
+		jWaitMove(60000);
+	}
+	if(cup >= 69 && cup <= 73)
+	{
+		jMoveStep(jCoord(0, -(cup - 68)));
+		jWaitMove(60000);
+		jMoveStep(jCoord(-5, 0));
+		jWaitMove(60000);
+	}
+	if(cup >= 74 && cup <= 78)
+	{
+		jMoveStep(jCoord(0, -(cup - 73)));
+		jWaitMove(60000);
+		jMoveStep(jCoord(-6, 0));
+		jWaitMove(60000);
+	}
+	if(cup >= 79 && cup <= 85)
+	{
+		if(cup != 79) {jMoveStep(jCoord(-(cup - 79), 0));
+		jWaitMove(60000);}
+		jMoveStep(jCoord(0, -1));
+		jWaitMove(60000);
+		jMoveStep(jCoord(-1, 0));
+		jWaitMove(60000);
+	}
+	jSleep(150);
+}
+
+//variables
+var CURRENTCUPBOARD = 1;
+var MULBERRY = null;
+var HOUSEDOOR = null;
+//main function
+//call it for full script
+function main()
+{
+	var beetwen = false;
+	jDropLastWindow(); //part of dirty hack| obligatory!
+	//opens pack
+	checkInventory();
+	HOUSEDOOR = jFindObjectByName("door-inn", 3);
+	if(HOUSEDOOR == null)
+		return;
+	//selecting mulberry
+	MULBERRY = jSelectObject("Select mulberry");
+	if(MULBERRY.name().indexOf("/mberry/") == -1)
+	{
+		jToConsole(scriptName + ": This is not mulberry! Script finished.");
+		return;
+	}
+	CURRENTCUPBOARD = setCupNumber();
+	if(CURRENTCUPBOARD > 86)
+		return;
+	while(CURRENTCUPBOARD != 86) //42!
+	{
+		jToConsole(scriptName + ": Going to fill " + CURRENTCUPBOARD + " cupboard.");
+		//goes to mulberry
+		jObjectOffsetMove(MULBERRY.getID(), jCoord(0, -20));
+		//waits moving
+		jWaitMove(60000);
+		//fills pack with leaves
+		pickLeafs();
+		//goto door
+		jObjectOffsetMove(HOUSEDOOR.getID(), jCoord(0, 15));
+		jWaitMove(60000);
+		//go to current FLAT
+		gotoHouse(CURRENTCUPBOARD);
+		jSleep(1000);
+		//filling cup
+		while(1)
+		{
+			//goes to current cup
+			moveToCup(CURRENTCUPBOARD);
+			var sidex = 0;
+			var sidey = 0;
+			//calcs searching cup side
+			if(CURRENTCUPBOARD >= 1 && CURRENTCUPBOARD <= 11)
+				{sidex = 0; sidey = -1;}
+			if(CURRENTCUPBOARD >= 12 && CURRENTCUPBOARD <= 20)
+				{sidex = 0; sidey = 1;}
+			if(CURRENTCUPBOARD >= 21 && CURRENTCUPBOARD <= 29)
+				{sidex = 0; sidey = -1;}
+			if(CURRENTCUPBOARD >= 30 && CURRENTCUPBOARD <= 41)
+				{sidex = 0; sidey = 1;}
+			if(CURRENTCUPBOARD >= 42 && CURRENTCUPBOARD <= 45)
+				{sidex = -1; sidey = 0;}
+			if(CURRENTCUPBOARD >= 46 && CURRENTCUPBOARD <= 49)
+				{sidex = 1; sidey = 0;}
+			if(CURRENTCUPBOARD >= 50 && CURRENTCUPBOARD <= 53)
+				{sidex = -1; sidey = 0;}
+			if(CURRENTCUPBOARD >= 54 && CURRENTCUPBOARD <= 59)
+				{sidex = 1; sidey = 0;}
+			if(CURRENTCUPBOARD >= 60 && CURRENTCUPBOARD <= 63)
+				{sidex = -1; sidey = 0;}
+			if(CURRENTCUPBOARD >= 64 && CURRENTCUPBOARD <= 68)
+				{sidex = 1; sidey = 0;}
+			if(CURRENTCUPBOARD >= 69 && CURRENTCUPBOARD <= 73)
+				{sidex = -1; sidey = 0;}
+			if(CURRENTCUPBOARD >= 74 && CURRENTCUPBOARD <= 78)
+				{sidex = 1; sidey = 0;}
+			if(CURRENTCUPBOARD >= 79 && CURRENTCUPBOARD <= 85)
+				{sidex = 0; sidey = -1;}
+			while(haveLeafs())
+			{
+				//filling cup
+				if(!fillCup(sidex, sidey))
+				{
+					jToConsole(scriptName + ": Error. Failed to fill cupboard " + CURRENTCUPBOARD);
+					return;
+					//finished script if failed to fill cup
+				}
+				jSleep(1000);//ÏÈÇÄÅÖ ÁËßÒÜ ÁÛÑÒÐÛÉ ßÂÀÑÊÐÈÏÒ ÍÀÕÓÉ!
+				//breaks if no leafs at pack
+				if(!haveLeafs()) break;
+				var offs = jCoord(0, 0);
+				var search = jCoord(0, 0);
+				//calcs moving offset and cup searching offset
+				if(CURRENTCUPBOARD > 0 && CURRENTCUPBOARD < 42)
+					{offs.x = 1; offs.y = 0; search.x = sidex +1; search.y = sidey;}
+				if(CURRENTCUPBOARD > 41 && CURRENTCUPBOARD < 60)
+					{if(CURRENTCUPBOARD == 45) break;
+					offs.x = 0; offs.y = -1; search.x = sidex; search.y = -1;}
+				if(CURRENTCUPBOARD > 59 && CURRENTCUPBOARD < 79)
+					{offs.x = 0; offs.y = 1; search.x = sidex; search.y = 1;}	
+				if(CURRENTCUPBOARD > 78)
+					{offs.x = 1; offs.y = 0; search.x = 1; search.y = sidey;}
+				//tries to find next cup
+				if(jFindObjectWithOffset("cupboard", 7, search) == null)
+					break; //breaks from one pack leafs
+				CURRENTCUPBOARD++;
+				jMoveStep(offs);
+				jWaitMove(60000);
+			}//WHILE HAVE LEAFS
+			gotoDefault(CURRENTCUPBOARD);
+			if(haveLeafs())
+			{
+				if(CURRENTCUPBOARD == 41 ||
+				   CURRENTCUPBOARD == 59 )
+				{
+					gotoStreet(CURRENTCUPBOARD);
+					CURRENTCUPBOARD++;
+					beetwen = true;
+					break; //breaks from cup filling
+				}   
+			}
+			if(!haveLeafs()) break; //breaks from cup filling
+			//we have leafs?
+			else CURRENTCUPBOARD++;
+		}//cupboard filling
+		if(!beetwen) gotoStreet(CURRENTCUPBOARD); //goes to stree if cup not 41 or 49
+		beetwen = false;
+		jSleep(200);
+	}
+}
+
+//calls main
+main();
+//goes to street from house
+gotoDefault(CURRENTCUPBOARD);
+gotoStreet(CURRENTCUPBOARD);
+jSleep(200);
+jGetChats()[0].sendMessage(scriptName + ": Job finished!");
+jToConsole(scriptName + ": Script finished. Last filled cupboard: " + (CURRENTCUPBOARD-1));

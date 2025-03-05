@@ -1,0 +1,153 @@
+//#! uniq = TROUGHFILLERBOT
+//#! icon = paginae/build/trough
+include("jBotAPI");
+
+var packSize = 56;
+var standPoint = jCoord(0, 0);
+var ffPoint = jCoord(0, 0);
+
+function fillTrough(o) {
+	var inv = jGetWindow("Inventory").getInventories()[0];
+	while(inv.freeSlots() < packSize) { //also, here
+	var s = inv.getItems("");
+	s[0].take();
+	jWaitDrag();
+	while(jIsDragging())
+	{
+		jObjectInteractClick(o.getID(), 1);
+		jSleep(100);
+	}
+	if(jIsDragging()) {
+		jDropObject(0);
+		jWaitDrop();
+	}
+	jSleep(300);
+	}
+	jDoClick(o.getID(), 3, 0);
+	while(!jHaveWindow("Trough"))
+			jSleep(500);
+	jSleep(1000);
+	var meter = jGetWindow("Trough").getMeterValue(1);
+	return meter;
+}
+
+function selectTroughs() {
+	var ta = [];
+	while(1) {
+		var trough = jSelectObject("Select trough...");
+		if(trough == null) break;
+		var name = trough.name();
+		if(name.indexOf("trough") != -1) {
+			if(ta.indexOf(trough) != -1) {
+				jToConsole("ERROR: This trough has been already selected.");
+				continue;
+			}
+			ta.push(trough);
+			jToConsole("Troughs count: " + ta.length);
+		}
+		else break;
+	}//troughs
+	return ta;
+}
+
+function foodName() {
+	var obj = jSelectObject("Select shit to pick...");
+	var n = obj.name();
+	//----
+	ffPoint = obj.position();
+	return n;
+}
+
+function pickFood(f, c) {
+	var shitid = null;
+	var inv = checkInventory();
+	var count = 0;
+	while(1)
+	{
+		if(jIsDragging()) break;
+		if(Math.abs(inv.freeSlots() - packSize) == c) break;
+		shitid = jFindObjectByName(f, 4); 
+		if(shitid == null)
+			break;
+		jDoClick(shitid.getID(), 3, 0);
+		jSleep(400);
+		count++;
+	}
+	if(jIsDragging()) {
+		jDropObject(0);
+		jWaitDrop();
+	}
+	return count;
+}
+
+function main() {
+	jDropLastWindow();
+	checkInventory();
+	standPoint = jMyCoords();
+	var troughs = selectTroughs();
+	var shit = foodName();
+	var haveFood = 0;
+	var stand = jCoord(0, 0);
+	var contr = 0;
+	for(var i = 0; i < troughs.length; i++) {
+		if(contr == 0)
+			stand = ffPoint;
+		else
+			stand = jMyCoords();
+		contr++;
+		jAbsClick(standPoint, 1, 0);
+		jWaitMove(actionTimeout);
+		//trough pos with offset
+		var c = troughs[i].position().add(22, 0);
+		jAbsClick(c, 1, 0);
+		jWaitMove(actionTimeout);
+		//opens window
+		jDoClick(troughs[i].getID(), 3, 0);
+		while(!jHaveWindow("Trough"))
+			jSleep(500);
+		jSleep(1000);
+		var meter = jGetWindow("Trough").getMeterValue(1);
+		if(meter >= 97) {
+			jAbsClick(standPoint, 1, 0);
+			jWaitMove(actionTimeout);
+			jAbsClick(stand, 1, 0);
+			jWaitMove(actionTimeout);
+			continue;
+		}
+		while(1) {
+			//filling trough
+			meter = 100 - meter;
+			//how much food we need
+			meter = (meter - 1) * 2;
+			if(meter > packSize) meter = packSize;	//ur inventory, i'm lazy to fix
+			jToConsole(meter);
+			//back to food
+			jAbsClick(standPoint, 1, 0);
+			jWaitMove(actionTimeout);
+			jAbsClick(stand, 1, 0);
+			jWaitMove(actionTimeout);
+			haveFood = pickFood(shit, meter);
+			if(haveFood == 0) {
+				jToConsole(""); 
+				break;
+			}
+			stand = jMyCoords();
+			//to trough
+			jAbsClick(standPoint, 1, 0);
+			jWaitMove(actionTimeout);
+			jAbsClick(c, 1, 0);
+			jWaitMove(actionTimeout);
+			//meter: current food count in current trough
+			var el = fillTrough(troughs[i]);
+			jAbsClick(standPoint, 1, 0);
+			jWaitMove(actionTimeout);
+			jAbsClick(stand, 1, 0);
+			jWaitMove(actionTimeout);
+			if(el >= 96) break;
+			meter = el;
+		}
+		if(haveFood == 0) break;
+	}
+}
+
+main();

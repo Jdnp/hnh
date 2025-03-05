@@ -1,0 +1,288 @@
+//#! uniq = apxproduction_miner
+//#! name = Miner
+//#! icon = gfx/invobjs/small/paxe
+
+include("jBotAPI");
+
+var mineDirection;
+var diagonalDirection;
+var addCellDirection;
+
+var makeCells = false;
+
+var stepsCount = 0;
+var needAddCell = -1;
+
+var cornerAdd = jCoord(5, 5);
+var actionTimeout = 1000 * 60 * 2;
+var inventory = checkInventory();
+
+var foodList = ["meat-cow", "cowchorizo"];
+
+function eatFood() {
+	var inv = checkInventory();
+	var fitems = inv.getItems(foodList);
+	if(fitems.length < 1) return;
+	fitems[0].iact();
+	if (jWaitPopup(actionTimeout)) 
+		jSelectContextMenu("Eat");
+	while(fitems[0].isActual())
+		jSleep(150);
+}
+
+function isInCorner() {
+	if (jTilify(jMyCoords()).add(diagonalDirection.mul(cornerAdd)).equals(jMyCoords())) return true;
+	else return false;
+}
+
+function isInCenter() {
+	return jTilify(jMyCoords()).equals(jMyCoords());
+}
+
+function waitStandInCenter() {
+	while (!isInCenter()) {
+		if (jWaitStartMove(1000)) {
+			jWaitEndMove(actionTimeout);
+		}
+	}
+}
+
+function waitStandInCorner() {
+	while (!isInCorner()) {
+		if (jWaitStartMove(1000)) {
+			jWaitEndMove(actionTimeout);
+		}
+	}
+}
+
+function waitSpeed(spd) {
+	while (jGetSpeed() != spd) {
+		jSleep(100);
+	}
+}
+
+var top_quality = 0;
+
+function dropAllMiningAdds() {
+	if (jIsDragging()) {
+		jDropObject(0);
+		jWaitDrop(actionTimeout);
+	}
+	// Quality dumper
+	var ore = inventory.getItems("ore", "seashell", "crystal", "catgold");
+	if (ore.length > 0) {
+		inventory.sortItems(ore, "quality", true);
+		if (ore[0].isActual()) {
+			if (ore[0].quality() > 50) {
+				if (ore[0].quality() > top_quality) top_quality = ore[0].quality();
+			}
+		}
+	}
+	
+	// Ore checker
+	var ore = inventory.getItems("ore");
+	if (ore.length > 0) {
+		if (needAddCell == -1) needAddCell = 4;
+	}
+	
+	var drops = inventory.getItems("ore", "seashell", "crystal", "catgold");
+	for (var i = 0; i < drops.length; i++) {
+		if(drops[i].isActual())
+			drops[i].drop();
+	}
+}
+
+function checkQ() {
+	if (top_quality > 50) {
+		jToConsole("Found ore/stone q" + top_quality);
+		jPrint("Found ore/stone q" + top_quality);
+	}
+	top_quality = 0;
+}
+
+function waitMoveToCoordAbs(coord) {
+	while (!jMyCoords().equals(coord)) {
+		if (jWaitStartMove(1000)) {
+			if (jWaitEndMove(actionTimeout)) {
+				if (!jMyCoords().equals(coord)) return false;
+				return true;
+			}
+		}
+	}
+	return true;
+}
+
+function escapeFromTroll(direction) {
+	resetCursor();
+	jSetSpeed(3);
+	waitSpeed(3);
+	jMoveStep(direction.mul(50));
+	//var bl = jBuddyList();
+	//for(var i = 0; i < bl.length; i++) {
+	//	if(bl[i] == "???") continue;
+	//	jPrivateChat(bl[i]);
+	//}
+	while(jHaveAggro()) {
+		if (jGetStamina() < 80) drinkWater();
+		jMoveStep(direction.mul(50));
+		//spamming
+		//var chats = jGetChats();
+		//for(var j = 0; j < chats.length; j++)
+		//	chats[j].sendMessage("I digged out fucking troll. Save me!");
+		jSleep(1000);
+	}
+	jMoveStep(jCoord(0, 0));
+	jSetSpeed(2);
+	var troll = jFindObjectByName("kritter/troll", 70);
+	while(troll == null) {
+		jMoveStep(direction.mul(-3));
+		jWaitMove(20000);
+		troll = jFindObjectByName("kritter/troll", 70);
+	}
+	jMoveStep(jCoord(0, 0));
+	jSleep(300);
+	jSendDoubleAction("bp", "hearth");
+	jSleep(1000);
+	jPlace(direction.mul(-1), 1, 0);
+}
+
+function main() {
+	//
+	var cavein = null;
+	var aggro = false;
+	//
+	var blist = ["North", "South", "West", "East", "Exit"];
+	var selectWindow = jGUIWindow(jCoord(250, 250), jCoord(215, 160), "Mining");
+	var label = jGUILabel(selectWindow, jCoord(65, 5), "Select direction:");
+	var miningResult = 0;
+	jGUIButton(selectWindow, jCoord(55, 25),  100, blist[0]);  // N
+	jGUIButton(selectWindow, jCoord(55, 75),  100, blist[1]);  // S
+	jGUIButton(selectWindow, jCoord(5, 50),  100, blist[2]);   // W
+	jGUIButton(selectWindow, jCoord(110, 50),  100, blist[3]); // E
+	jGUIButton(selectWindow, jCoord(55, 150),  100, blist[4]); // Exit
+	var box = jGUICbox(selectWindow, jCoord(10, 100), "Add cells for ore");
+	selectWindow.toggleCloseButton();
+	var btext = selectWindow.waitButtonClick();
+	makeCells = box.isChecked();
+	if (btext == blist[0]) {
+		mineDirection = jCoord(0, -1);
+		diagonalDirection = jCoord(-1, -1);
+		addCellDirection = jCoord(1, 0);
+	}
+	if (btext == blist[1]) {
+		mineDirection = jCoord(0, 1);
+		diagonalDirection = jCoord(1, 1);
+		addCellDirection = jCoord(-1, 0);
+	}
+	if (btext == blist[2]) {
+		mineDirection = jCoord(-1, 0);
+		diagonalDirection = jCoord(-1, -1);
+		addCellDirection = jCoord(0, 1);
+	}
+	if (btext == blist[3]) {
+		mineDirection = jCoord(1, 0);
+		diagonalDirection = jCoord(1, 1);
+		addCellDirection = jCoord(0, -1);
+	}
+	if (btext == blist[4]) {
+		selectWindow.destroy();
+		return;
+	}
+	selectWindow.destroy();
+	jSetSpeed(0);
+	waitSpeed(0);
+	while (true)
+	{
+		if(cavein != null) break;
+		if(aggro) {
+			escapeFromTroll(mineDirection.mul(-1));
+			break;
+		}
+		// На голод
+		if(jGetHungry() < 85)
+			eatFood();
+		if(jGetHungry() < 52) break;
+		// Встать в центре тайла
+		if (!isInCenter()) {
+			jMoveStep(jCoord(0, 0));
+			waitStandInCenter();
+		}
+		// Проверка прокопанности
+		if (jGetTileType(mineDirection) != 255 || jGetTileType(mineDirection.mul(2, 2)) != 255) {
+			sayArea("Mined tile in mine direction");
+			break;
+		}
+		if (needAddCell == 0 && makeCells) {
+			needAddCell = -1;
+			var currentCellCoordAbs = jMyCoords();
+			var digAddCoordAbs = jTilify(jMyCoords().add(addCellDirection.mul(11, 11)));
+			while (true) {
+				// Отпиваемся и копаем
+				if (jGetStamina() < 80) drinkWater();
+				jSendAction("mine");
+				jWaitCursor("mine", actionTimeout);
+				jAbsClick(digAddCoordAbs, 1, 0);
+				jWaitStartProgress(actionTimeout);
+				while (jHaveHourglass()) {
+					dropAllMiningAdds();
+					jSleep(500);
+				}
+				// Проверяем на обвалы
+				cavein = jFindObjectByName("caveinstone", 7);
+				if(cavein != null) break;
+				// Проверяем не выкопали ли тролля
+				if(jHaveAggro()) {aggro = true; break;}
+				dropAllMiningAdds();
+				resetCursor();
+				// Перейти на выкопанный тайл
+				jAbsClick(digAddCoordAbs, 1, 0);
+				if (waitMoveToCoordAbs(digAddCoordAbs)) break;
+			}
+			//
+			resetCursor();
+			if(cavein != null || aggro) continue;
+			jAbsClick(currentCellCoordAbs, 1, 0);
+			waitMoveToCoordAbs(currentCellCoordAbs);
+		}
+		// Абсолютные координаты копки
+		var digCoordAbs = jTilify(jMyCoords().add(mineDirection.mul(11, 11)));
+		// Идем по диагонали
+		jMoveStep(diagonalDirection);
+		waitStandInCorner();
+		while (true) {
+			// Отпиваемся и копаем
+			if (jGetStamina() < 80) drinkWater();
+			jSendAction("mine");
+			jWaitCursor("mine", actionTimeout);
+			jAbsClick(digCoordAbs, 1, 0);
+			jWaitStartProgress(actionTimeout);
+			while (jHaveHourglass()) {
+				dropAllMiningAdds();
+				jSleep(500);
+			}
+			// Проверяем на обвалы
+			cavein = jFindObjectByName("caveinstone", 7);
+			if(cavein != null) break;
+			// Проверяем не выкопали ли тролля
+			if(jHaveAggro()) {aggro = true; break;}
+			dropAllMiningAdds();
+			resetCursor();
+			// Перейти на выкопанный тайл
+			jAbsClick(digCoordAbs, 1, 0);
+			if (waitMoveToCoordAbs(digCoordAbs)) break;
+		}
+	if (needAddCell > 0) {
+		needAddCell--;
+	}
+	checkQ();
+	}//main while
+}
+
+//	if (jGetHHP() <= 400)
+//	{
+//		sayArea("Too low HHP");
+//		jExit();
+//	}
+
+
+main();

@@ -1,0 +1,206 @@
+//#! uniq = pumpkineater_apxproductions
+//#! name = CarrotEater
+//#! tooltip = Eat Carrot DL east plot
+//#! icon = gfx/invobjs/pumpkinflesh
+
+include("jBotAPI");
+
+//var foodWait = 1000 * 60 * 1;
+
+// function checkBuff()
+// {
+// 	var buffs = jGetBuffs();
+// 	var need_update = true;
+// 	for (var i = 0; i < buffs.length; i++) {
+// 		if (buffs[i].name().indexOf("In the Fog") >= 0) {
+// 			if (buffs[i].time() > 25) {
+// 				need_update = false;
+// 			}
+// 		}
+// 	}
+// 	if (need_update)
+// 	{
+// 		var hemps = inventory.getItems("hemp-cured");
+// 		if (hemps.length > 0) {
+// 			inventory.sortItems(hemps, "amount", true);
+// 			var hemp = hemps[0];
+// 			var equip = checkEquipment();
+// 			if (equip.resName(1).indexOf("pipe") >= 0) {
+// 				hemp.take();
+// 				jWaitDrag(actionTimeout);
+// 				equip.itemact(1);
+// 				jWaitDrop(actionTimeout);
+// 				equip.iact(1);
+// 				if (jWaitPopup(actionTimeout)) {
+// 					jSelectContextMenu("Light");
+// 				}
+// 			}
+// 		}
+// 	}
+// }
+
+// function prepareToEat()
+// {
+// 	var chair = jFindObjectByName("furniture/chair", 55);
+// 	jDoClick(chair, 3, 0);
+// 	while (!jObjectPos(chair).equals(jMyCoords())) jSleep(100);
+// 	jSleep(2000);
+// }
+
+// function eatFromTable()
+// {
+// 	var table = jFindObjectByName("table", 11);	
+// 	jDoClick(table, 3, 0);
+// 	jDropLastWindow();
+// 	var table_wnd = jWaitNewWindow("Table", actionTimeout);
+// 	waitInventory(table_wnd, 0);
+// 	var table_inv = table_wnd.getInventories()[1];
+// 	table_wnd.pushButton("Feast!");
+// 	while (!jIsCursor("eat")) jSleep(100);
+// 	while (true) {
+// 		var food = table_inv.getItems("");
+// 		if (jGetHungry() > 95) return;
+// 		if (food.length == 0) jSleep(foodWait);
+// 		for (var i = 0; i < food.length; i++) {
+// 			if (food[i].isActual()) {
+// 				food[i].take();
+// 				jWaitProgress(actionTimeout);
+// 				if (jGetHungry() > 95) return;
+// 			}
+// 		}
+// 	}
+// }
+
+function GotoWellOffset()
+{
+	var well = jFindObjectByName("terobjs/well", 30);
+	var pos = well.position().add(jCoord(1*11, 2*11));
+	MoveToPosSafe(pos);
+}
+
+function FillBuckets()
+{
+	var inventory = checkInventory();
+	var buckets = inventory.getItems("buckete");
+	var well = jFindObjectByName("terobjs/well", 30);		
+	for (var i = 0; i < buckets.length; i++)
+	{
+		var bucket_coord = buckets[i].coord();
+		buckets[i].take();
+		jWaitDrag(actionTimeout);
+		well.interactClick(0);
+		var bucket = jGetDraggingItem();
+		while (bucket.resName().indexOf("bucket-water") <= 0) jSleep(100);
+		inventory.drop(bucket_coord);
+		jWaitDrop(actionTimeout);
+	}
+}
+
+function ProceedStarv()
+{
+	while (jGetHungry() > 58)
+	{
+		jSetSpeed(3);
+		FillBuckets();
+
+		GotoWellOffset();
+	
+		jMoveStep(jCoord(0, 52));
+		jWaitStartMove(actionTimeout);
+		drinkWater();
+		jWaitEndMove(actionTimeout);
+		
+		jMoveStep(jCoord(0, -52));
+		jWaitStartMove(actionTimeout);
+		drinkWater();
+		jWaitEndMove(actionTimeout);	
+	}
+}
+
+function DropFromCursor()
+{
+	while (jIsDragging())
+	{
+		jDropObject(0);
+		jSleep(300);
+	}
+}
+function TakeCarrot()
+{
+	while (true)
+	{
+		if (jIsDragging())
+		{
+			DropFromCursor();
+			return true;
+		}
+		var shitId = jFindObjectByName("gfx/terobjs/items/carrot", 30); 
+		if (shitId == null)
+		{
+			return false;
+		}
+		MoveToPosSafe(shitId.position());
+		if (shitId.isActual()) shitId.doClick(3, 0);
+		jSleep(100);
+	}
+}
+function EatCarrot()
+{
+	var inventory = checkInventory();
+	while (true)
+	{
+		var food = inventory.getItems("gfx/invobjs/carrot");
+		if (jGetHungry() > 95) return false;
+		if (food.length == 0) return true;
+		for (var i = 0; i < food.length; i++)
+		{
+			if (food[i].isActual())
+			{
+				food[i].iact(); 
+				jWaitPopup();
+				jSelectContextMenu("Eat")
+				waitUnActual(food[i]);
+				if (jGetHungry() > 95) return false;
+			}
+		}
+	}
+}
+
+function Eat()
+{
+	while (true)
+	{
+		var isMore = TakeCarrot();
+		if (!EatCarrot()) break;
+		if (!isMore)
+		{
+			jPrint("No more carrot");
+			jExit();
+		}
+	}	
+}
+
+function main()
+{
+	var startPos = jMyCoords();
+
+	while (true)
+	{
+//		checkBuff();
+// 		prepareToEat();
+// 		eatFromTable();
+//		resetCursor();
+
+		Eat();
+
+		MoveToPosSafe(startPos);
+
+		GotoWellOffset();
+		ProceedStarv();
+		GotoWellOffset();
+
+		MoveToPosSafe(startPos);
+	}
+}
+
+main();

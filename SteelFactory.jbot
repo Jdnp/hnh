@@ -1,0 +1,2593 @@
+//#! uniq = STEELFACTORY
+//#! tooltip = Steel factory
+//#! name = Steel factory
+//#! icon = gfx/invobjs/bar-steel
+
+include("jBotAPI");
+
+function Finish(itext)
+{
+	jPrint("Exit - "+itext);
+	jExit();
+}
+
+function DropFromCursor()
+{
+	while (jIsDragging())
+	{
+		jDropObject(0);
+		jSleep(300);
+	}
+}
+function DropWoodBlocksFromInv()
+{
+	var inv = checkInventory();
+	var items = inv.getItems("wood");
+	if (items.length > 0)
+	{	
+		items[0].dropSuchAll();
+		//waits dropping
+		while (inv.getItems("wood").length > 0) jSleep(300);
+	}
+}
+function DropFromInv(resName)
+{
+	var inv = checkInventory();
+	var items = inv.getItems(resName);
+	if (items.length > 0)
+	{	
+		items[0].dropSuchAll();
+		//waits dropping
+		while (inv.getItems(resName).length > 0) jSleep(300);
+	}
+}
+function FromCursorToInv(resName)
+{
+	DropFromCursor();
+	var res = jFindObjectByName(resName, 1);
+	if (res != null)
+	{
+		res.doClick(3, 0);
+		jSleep(500);
+		if (jIsDragging()) DropFromCursor();
+	}
+}
+function GetInvFree()
+{
+	var inv = checkInventory();
+	return inv.freeSlots();
+}
+function GetInvResCount(resName)
+{
+	var inv = checkInventory();
+	var invItems = inv.getItems(resName);
+	return invItems.length;
+}
+function GetWindow(objWndName)
+{
+	var wnd;
+	while (true)
+	{
+		wnd = jGetWindow(objWndName);
+		if (wnd != null) return wnd;
+		jSleep(300);
+	}
+}
+function GetObjFree(objWndName)
+{
+	var wnd = GetWindow(objWndName);
+	var objInv = wnd.getInventories()[0];
+	return objInv.freeSlots();
+}
+function GetObjResCount(objWndName, resName)
+{
+	var wnd = GetWindow(objWndName);
+	var objInv = wnd.getInventories()[0];
+	var objItems = objInv.getItems(resName);
+	return objItems.length;
+}
+
+//---------------------------------------------------------------------
+// chop trees
+//---------------------------------------------------------------------
+function TakeAxe()
+{
+	var inv = checkInventory();
+	var equip = checkEquipment();
+	if (equip.name(6) == "Stone Axe") return;
+	if (equip.name(7) == "Stone Axe") return;
+	while (true)
+	{
+		equip.transfer(6);
+		equip.transfer(7);
+		if (equip.name(6) == "") break;
+		if (equip.name(7) == "") break;
+		jSleep(300);
+	}
+
+	DropFromCursor();
+
+	var axe = inv.getItems("axe");
+	if (axe.length == 0) Finish("no axe");
+	while (!jIsDragging())
+	{
+		axe[0].take();
+		jSleep(300);
+	}
+	while (jIsDragging())
+	{
+		equip.dropTo(6);
+		jSleep(300);
+	}
+}
+function TakeShovel()
+{
+	var inv = checkInventory();
+	var equip = checkEquipment();
+	if (equip.name(6) == "Shovel") return;
+	if (equip.name(7) == "Shovel") return;
+	while (true)
+	{
+		equip.transfer(6);
+		equip.transfer(7);
+		if (equip.name(6) == "") break;
+		if (equip.name(7) == "") break;
+		jSleep(300);
+	}
+
+	DropFromCursor();
+
+	var shovel = inv.getItems("shovel");
+	if (shovel.length == 0) Finish("no shovel");
+	while (!jIsDragging())
+	{
+		shovel[0].take();
+		jSleep(300);
+	}
+	while (jIsDragging())
+	{
+		equip.dropTo(6);
+		jSleep(300);
+	}
+}
+
+function RemoveStump(stump)
+{
+	resetCursor();
+	DropFromCursor();
+	DropWoodBlocksFromInv();
+
+	drinkWater();
+
+	TakeShovel();
+
+	stump.doClick(3, 0);
+	jWaitPopup(actionTimeout);
+	if (jHavePopup())
+	{
+		jSelectContextMenu("Remove");
+		jWaitProgress(actionTimeout);
+	}
+
+	DropFromCursor();
+	DropWoodBlocksFromInv();
+}
+
+function ChopTree(tree)
+{
+	resetCursor();
+	DropFromCursor();
+	DropWoodBlocksFromInv();
+
+	TakeAxe();
+
+	tree.doClick(3, 0);
+	jWaitPopup(actionTimeout);
+	if (jHavePopup())
+	{
+		jSelectContextMenu("Chop");
+		jWaitProgress(actionTimeout);
+	}
+	jSleep(500);
+}
+
+function TakeLog()
+{
+	var offsetAround = [[11, 11], [11, 0], [11, -11], [0, 11], [0, -11], [-11, 11], [-11, 0], [-11, -11]];
+	var treesList = ["/stump", "/trees/fir", "/trees/pine"];
+
+	while (true)
+	{
+		jSleep(1000);
+
+		if (!MoveRandomDirection(3)) return false;
+
+		if (!noMoreWine())
+		{		
+			var logsAll = jGetObjects(45, jCoord(0, 0), "/trees/log");
+			for (var i = 0; i < logsAll.length; i++)
+			{
+				var log = logsAll[i];
+				if (!jIsPathFree(log.position()))	continue;
+
+				// debug
+				//MoveToPos(log.position());
+				MoveToPosSafe(log.position());
+
+				resetCursor();
+				DropFromCursor();
+			
+				var me = jGob(jGetMyID());
+				jSendAction("carry");
+				jWaitCursor("chi", actionTimeout);
+				log.doClick(1, 0);
+				while (!me.isCarrying())
+				{
+					jSleep(1000);
+				}
+				return true;
+			}
+		}
+
+		// no log avaliable - chop tree and remove stumps
+		treeEnd:
+		for (var k = 0; k < treesList.length; k++)
+		{
+			var treesAll = jGetObjects(75, jCoord(0, 0), treesList[k]);
+			for (var i = 0; i < treesAll.length; i++)
+			{
+				var tree = treesAll[i];
+
+				var num = -1;	
+				for (var n = 0; n < offsetAround.length; n++)
+				{
+					var pos = jCoord(tree.position().x + offsetAround[n][0], tree.position().y + offsetAround[n][1]);
+					if (jIsPathFree(pos))
+					{
+						num = n;
+						break;
+					}
+				}	
+				if (num == -1) continue;
+
+				var startPos = jMyCoords();
+
+				var pos = jCoord(tree.position().x + offsetAround[num][0], tree.position().y + offsetAround[num][1]);
+				// debug
+				//MoveToPos(pos);
+				MoveToPosSafe(pos);
+		
+				// debug
+				//if (CheckHostile()) return false;
+
+				if ((tree.name() == "gfx/terobjs/trees/pine/stump") || (tree.name() == "gfx/terobjs/trees/fir/stump"))
+				{
+					RemoveStump(tree);
+				}
+				else
+				{
+					ChopTree(tree);
+				}
+
+				// debug
+				//MoveToPos(startPos);
+				MoveToPosSafe(startPos);
+
+				break treeEnd;
+			}
+		}
+	}
+	Finish("no more trees in range");
+	return true;
+}
+
+function TeleportToTotem()
+{
+	DropFromCursor();
+	DropWoodBlocksFromInv();
+
+	// drink wine
+	if (travelCount() > 85)
+	{
+		while (noMoreWine())
+		{
+			jSleep(2*1000);
+			return false;
+		}
+		drinkWine();
+	}
+	
+	// teleport
+	jSendDoubleAction("theTrav", "village");
+	jWaitProgress(actionTimeout);
+
+	while (true)
+	{
+		if (jFindObjectByName("vclaim", 10) != null) break;
+		jSleep(1000);
+	}
+	return true;
+}
+
+function UnloadWoodLog()
+{
+	var waypoints = 
+	[
+		[6, 0],
+		[10, -1],
+		[35, 0],
+	];
+
+	// привязка
+	var totem = jFindObjectByName("vclaim", 10);
+	if (totem == null) Finish("no totem O_o");
+
+	// move to factory
+	var initPos = totem.position();
+	var startPos = jCoord(0, 0);
+	for (var i = 0; i < waypoints.length; i++)
+	{
+		MoveToPosSafe(jCoord(initPos.x + (waypoints[i][0] - startPos.x)*11, initPos.y + (waypoints[i][1] - startPos.y)*11));
+	}
+
+	// drop
+	var me = jGob(jGetMyID());
+	if (me == null) Finish("no me? O_o");
+	if(me.isCarrying())
+	{
+		jAbsClick(jMyCoords(), 3, 0);
+		while (me.isCarrying())
+		{
+			jSleep(1000);
+		}
+	}
+
+	// print count
+	var logsList = jGetObjects(2, jCoord(0, 0), "/trees/log");
+	jPrint("logs count = "+logsList.length);
+	return logsList.length;
+}
+
+function ChopAndDeliverTrees()
+{
+	var logsMax = 220;
+	jSetSpeed(1);
+	TeleportHF();
+	while (true)
+	{
+		if (!TakeLog())
+		{ // hostile spotted!
+			jPrint("fukin bear!");
+			TeleportToTotem();
+			sayArea("fukin bear!");
+			WaitRespawn();
+			continue;
+		}
+		if (!TeleportToTotem())
+		{
+			jLogout();
+			Finish("finished. cannot teleport to totem. possibly ")
+		}
+		var logsCount = UnloadWoodLog();
+		if (logsCount > logsMax)
+		{
+			Finish("work done. "+logsMax+" logs ready.");
+		}
+		TeleportHF();
+	}
+}
+
+//---------------------------------------------------------------------
+// chop to blocks
+//---------------------------------------------------------------------
+function GetPalisadeSign(radius, offset)
+{
+	var sign = jFindObjectWithOffset("/sign", radius, offset);
+	if (sign == null) Finish("no sign");			
+	sign.doClick(3, 0);
+	while (!jHaveWindow("Palisade Cornerpost")) jSleep(300);
+	return sign;
+}
+function GetBuildValues(signName, itemNum)
+{
+	var str = jGetBuildValues(signName, itemNum);
+	var strRes = str.split("/");
+	var res = [];
+	res[0] = parseInt(strRes[0]);	
+	res[1] = parseInt(strRes[1]);	
+	res[2] = parseInt(strRes[2]);	
+	return res;	
+}
+
+function ChopLog()
+{
+	var log = jFindObjectByName("/log", 1);
+	if (log == null) return;
+	log.doClick(3, 0);
+	jWaitPopup(actionTimeout);
+	jSleep(100);
+	if (jHavePopup())
+	{
+		jSelectContextMenu("Chop into Blocks");
+		jWaitProgress(actionTimeout);
+	}
+}
+
+function ChopToBlocks()
+{
+	var signsOffset =
+	[
+		[1, 0],
+		[1, 0],
+		[1, 0],
+		[1, 0],
+
+		[-1, 0],
+		[-1, 0],
+		[-1, 0],
+		[-1, 0],
+		[1, 0],
+		[1, 0],
+		[1, 0],
+		[1, 0],
+
+		[-1, 0],
+		[-1, 0],
+		[-1, 0],
+		[-1, 0],
+		[1, 0],
+		[1, 0],
+		[1, 0],
+		[1, 0],
+
+		[-1, 0],
+		[-1, 0],
+		[-1, 0],
+		[-1, 0],
+		[1, 0],
+		[1, 0],
+		[1, 0],
+		[1, 0],
+
+		[0, -1],
+		[0, -1],
+		[0, -1],
+
+//		[1, 0],
+//		[1, 0],
+//		[1, 0],
+//		[1, 0],
+	];	
+
+	var signsFull = [];
+	for (var i = 0; i < signsOffset.length; i++) signsFull[i] = false;
+
+	var waypoints =
+	[
+		[[15, -3], [15, -4]],
+		[[15, -3], [15, -5]],
+		[[15, -3], [15, -6]],
+		[[15, -3], [15, -7]],
+
+		[[14, -3], [14, -4]],
+		[[14, -3], [14, -5]],
+		[[14, -3], [14, -6]],
+		[[14, -3], [14, -7]],
+		[[11, -3], [11, -4]],
+		[[11, -3], [11, -5]],
+		[[11, -3], [11, -6]],
+		[[11, -3], [11, -7]],
+
+		[[10, -3], [10, -4]],
+		[[10, -3], [10, -5]],
+		[[10, -3], [10, -6]],
+		[[10, -3], [10, -7]],
+		[[7, -3], [7, -4]],
+		[[7, -3], [7, -5]],
+		[[7, -3], [7, -6]],
+		[[7, -3], [7, -7]],
+
+		[[6, -3], [6, -4]],
+		[[6, -3], [6, -5]],
+		[[6, -3], [6, -6]],
+		[[6, -3], [6, -7]],
+		[[3, -3], [3, -4]],
+		[[3, -3], [3, -5]],
+		[[3, -3], [3, -6]],
+		[[3, -3], [3, -7]],
+
+		[[0, -4], [-3, -4]],
+		[[0, -4], [-4, -4]],
+		[[0, -4], [-5, -4]],
+
+//		[[-8, -4], [-8, -7]],
+//		[[-8, -4], [-8, -8]],
+//		[[-8, -4], [-8, -9]],
+//		[[-8, -4], [-8, -10]],
+	];
+
+	var logsPos = jCoord(0, -3*11);
+
+	// chop blocks
+	var equip = checkEquipment();
+	if ((equip.resName(6).indexOf("/axe") == -1) && (equip.resName(7).indexOf("/axe") == -1))
+	{
+		jToConsole("You must be equipped with axe.");
+		Finish("axe must be equipped");
+	}
+
+	jSetSpeed(2);
+
+	while (true)
+	{
+		TeleportHF();
+
+		// chop log
+		var initPos = jMyCoords();
+		MoveToPosSafe(jCoord(initPos.x + logsPos.x, initPos.y + logsPos.y));
+
+		// collect from ground
+		while (true)
+		{
+			if (jIsDragging())
+			{
+				DropFromCursor();
+				break;
+			}
+			var woodId = jFindObjectByName("wood", 2); 
+			if (woodId == null)
+			{
+				MoveToPosSafe(jCoord(initPos.x + logsPos.x, initPos.y + logsPos.y));
+				if (jFindObjectByName("/log", 1) == null) Finish("out of logs");
+				ChopLog();
+				continue;
+			}
+			if (woodId.isActual()) woodId.doClick(3, 0);
+			jSleep(100);
+		}
+
+		MoveToPosSafe(jCoord(initPos.x + logsPos.x, initPos.y + logsPos.y));
+
+		// put to signs
+		for (var i = 0; i < signsOffset.length; i++)
+		{
+			if (signsFull[i]) continue;
+
+			for (var n = 0; n < waypoints[i].length; n++)
+			{
+				MoveToPosSafe(jCoord(initPos.x + waypoints[i][n][0]*11, initPos.y + waypoints[i][n][1]*11));
+			}
+
+			GetPalisadeSign(1, jCoord(signsOffset[i][0], signsOffset[i][1]));
+			
+			var buildVals = GetBuildValues("Palisade Cornerpost", 1);
+			var freeSpace = buildVals[0];
+
+			if (freeSpace > 0)
+			{
+			 	var inv = checkInventory();
+				var items = inv.getItems("wood");
+				if (items.length > 0)
+				{
+					var transferCount = Math.min(freeSpace, items.length);
+					var leftoverCount = items.length - transferCount;
+					items[0].transferSuchAll();
+					//waits transfering
+					while (inv.getItems("wood").length > leftoverCount) jSleep(300);
+					if (leftoverCount > 0) signsFull[i] = true;
+				}
+			}			
+			else
+			{
+				signsFull[i] = true;
+			}
+			break;
+		}
+
+		var allSignsFull = true;
+		for (var n = 0; n < signsOffset.length; n++)
+		{
+			if (!signsFull[n])
+			{
+				allSignsFull = false;
+				break;
+			}
+		}
+		if (allSignsFull) Finish("done. all singns full.");
+	}
+}
+
+//---------------------------------------------------------------------
+// fuel steel
+//---------------------------------------------------------------------
+
+function FuelSteel()
+{
+	var signsOffset =
+	[
+		[1, 0],
+
+		[-1, 0],
+		[1, 0],
+
+		[-1, 0],
+		[1, 0],
+
+		[-1, 0],
+		[1, 0],
+	];	
+	var waypoints =
+	[
+		[[0, -2], [15, -3], [15, -4]],
+
+		[[0, -2], [14, -3], [14, -4]],
+		[[0, -2], [11, -3], [11, -4]],
+
+		[[0, -2], [10, -3], [10, -4]],
+		[[0, -2], [7, -3], [7, -4]],
+
+		[[0, -2], [6, -3], [6, -4]],
+		[[0, -2], [3, -3], [3, -4]],
+	];
+	var blockSignsCount = 4;
+	var cruciblesCount = 16;
+	
+	var moveDir = jCoord(0, -1*11);
+
+ 	var inv = checkInventory();
+	if (inv.size().x*inv.size().y != inv.freeSlots())
+	{
+		Finish("inventory must be empty");
+	}
+	var maxBlocksInInv = Math.floor(inv.size().x/2)*inv.size().y - 5;
+
+	jSetSpeed(2);
+	
+	var allOk = true;
+
+	for (var i = 0; i < signsOffset.length; i++)
+	{
+		var cruciblesFull = [];
+		for (var n = 0; n < cruciblesCount; n++) cruciblesFull[n] = false;
+
+		var rowFullCount = 0;
+		while (true)
+		{
+			TeleportHF();
+			FromCursorToInv("/branch");
+		
+			var initPos = jMyCoords();
+
+			// goto wood
+			for (var n = 0; n < 3; n++)
+			{
+				MoveToPosSafe(jCoord(initPos.x + waypoints[i][n][0]*11, initPos.y + waypoints[i][n][1]*11));
+			}
+			var startPos = jCoord(initPos.x + waypoints[i][2][0]*11, initPos.y + waypoints[i][2][1]*11);
+			
+			var allCruciblesFull = true;
+			for (var n = 0; n < cruciblesCount; n++)
+			{
+				if (!cruciblesFull[n])
+				{
+					allCruciblesFull = false;
+					break;
+				}
+			}
+			if (allCruciblesFull)
+			{
+				rowFullCount++;
+				for (var n = 0; n < cruciblesCount; n++) cruciblesFull[n] = false;
+			}
+			if (rowFullCount >= 4) // 4 times chesk, a bit longer but more reliable in massive lags
+			{
+				// unload
+				GetPalisadeSign(1, jCoord(signsOffset[i][0], signsOffset[i][1]));
+			
+				var buildVals = GetBuildValues("Palisade Cornerpost", 1);
+				var freeSpace = buildVals[0];
+
+				if (freeSpace > 0)
+				{
+				 	var inv = checkInventory();
+					var items = inv.getItems("wood");
+					if (items.length > 0)
+					{
+						var transferCount = Math.min(freeSpace, items.length);
+						var leftoverCount = items.length - transferCount;
+						items[0].transferSuchAll();
+						//waits transfering
+						while (inv.getItems("wood").length > leftoverCount) jSleep(300);
+					}
+				}			
+
+				break;
+			}
+
+			var woodCount = 0;
+			// get wood
+			for (var n = 0; n < blockSignsCount; n++)
+			{
+				var pos = jCoord(startPos.x + n*moveDir.x, startPos.y + n*moveDir.y);
+				MoveToPosSafe(pos);
+
+				GetPalisadeSign(1, jCoord(signsOffset[i][0], signsOffset[i][1]));
+
+				var buildVals = GetBuildValues("Palisade Cornerpost", 1);
+				var blocksCount = buildVals[1];
+
+			 	var inv = checkInventory();
+				var items = inv.getItems("wood");
+				var blocksInInv = items.length;
+				var transferBlocks = Math.min(maxBlocksInInv - blocksInInv, blocksCount);
+
+				for (var k = 0; k < transferBlocks; k++)
+				{
+					jTransferBuildItem("Palisade Cornerpost", 1);
+					//waits transfering
+					while (inv.getItems("wood").length == blocksInInv+k+1) jSleep(300);
+				}
+				woodCount = blocksInInv+transferBlocks;
+			}
+			if (woodCount == 0)
+			{
+				allOk = false;
+				jPrint("Row "+i+" out of woodblocks");
+				break;	
+			}
+
+			// goto steel
+			fuelCrucCycle:
+			for (var n = 0; n < cruciblesCount; n++)
+			{
+				if (cruciblesFull[n]) continue;
+
+				// go to cruc n
+				var pos = jCoord(startPos.x + (blockSignsCount + n)*moveDir.x, startPos.y + (blockSignsCount + n)*moveDir.y);
+				MoveToPosSafe(pos);
+
+				// load
+			 	var inv = checkInventory();
+				while (true)
+				{
+					if (!jIsDragging())
+					{ // take branch
+						var items = inv.getItems("/branch");
+						if (items.length == 0) // break fuelCrucCycle;
+						{
+							var blocks = inv.getItems("/wood");
+							if (blocks.length == 0) break fuelCrucCycle;
+							//woodblock to branch
+							blocks[0].iact();
+							if (jWaitPopup(actionTimeout))
+							{
+								jSelectContextMenu("Split");
+								while (inv.getItems("/branch").length == 0) jSleep(100);
+							}
+						}		
+						var items = inv.getItems("/branch");
+						if (items.length == 0) break fuelCrucCycle;
+						items[0].take();
+						while (!jIsDragging()) jSleep(300);
+					}
+
+					var cruc = jFindObjectWithOffset("/sbox", 1, jCoord(signsOffset[i][0], signsOffset[i][1]));
+					if (cruc == null) Finish("no crucible "+i+", "+n);
+					cruc.interactClick(0);
+
+					// сцука, как узнать что попробовали запихать или что сталеварка полная?
+					for (var s = 0; s < 4; s++)
+					{
+						if (!jIsDragging()) break;
+						jSleep(250);
+					}	
+
+					if (jIsDragging())
+					{
+						cruciblesFull[n] = true;
+						continue fuelCrucCycle;
+					}
+				}
+			}
+		}		
+	}
+
+	if (allOk)
+	{
+		jPrint("done. fuel loaded to all crucibles.");
+	}
+	else
+	{
+		jPrint("not all done. some crucibles without fuel.");
+	}
+	TeleportHF();
+	DropFromInv("/branch");
+}
+
+function FuelSteelPeriodic()
+{
+	while (true)
+	{
+		FuelSteel();
+		jLogout();
+		jSleep(5*60*60*1000); // 5 hours
+		Login(iaccName, icharName);
+	}
+}
+
+//---------------------------------------------------------------------
+// smelt ore and cast iron
+//---------------------------------------------------------------------
+function GetObject(name, wndName, radius, offset)
+{
+	var obj = jFindObjectWithOffset(name, radius, offset);
+	if (obj == null) return null;
+	obj.doClick(3, 0);
+	while (!jHaveWindow(wndName)) jSleep(300);
+	return obj;
+}
+function GetChest(radius, offset)
+{
+	return GetObject("/cclosed", "Chest", radius, offset);
+}
+function GetLC(radius, offset)
+{
+	return GetObject("/lchest", "Chest", radius, offset);
+}
+function GetKiln(radius, offset)
+{
+	return GetObject("/kiln", "Kiln", radius, offset);
+}
+function GetSmelter(radius, offset)
+{
+	return GetObject("/smelter", "Ore Smelter", radius, offset);
+}
+function GetForge(radius, offset)
+{
+	return GetObject("/fforge", "Finery Forge", radius, offset);
+}
+function GetCrucible(radius, offset)
+{
+	return GetObject("/sbox", "Steel Crucible", radius, offset);
+}
+
+function HasFuel(obj)
+{
+	var blob0 = parseInt(obj.blob(0));
+	if (blob0 == 2) return false; // kiln, smelter, oven, fforge witout cast
+	if (blob0 == 18) return false; // fforge with cast
+	return true;
+}
+function CanLight(obj)
+{
+	var blob0 = parseInt(obj.blob(0));
+	if (blob0 == 66) return true; // kiln, smelter, oven, fforge witout cast 
+	if (blob0 == 82) return true; // fforge with cast
+	return false;
+}
+function IsBurning(obj)
+{
+	var blob0 = parseInt(obj.blob(0));
+	if (blob0 == 70) return true; // emtpy - kiln, smelter, oven, fforge
+	if (blob0 == 78) return true; // filled - kiln, smelter, oven
+	if (blob0 == 110) return true; // filled - fforge
+	return false;
+}
+
+//---------------------------------------------------------------------
+function Kilns()
+{
+	this.name = "Kilns";
+	this.offset =
+	[
+		[2, 0],
+		[-2, 0],
+	];	
+	this.searchRadius = 1;
+	this.waypoints =
+	[
+		[[2, -2], [2, -7]],
+		[[2, -2], [1, -7]],
+	];
+	this.waypointsCount = 2;
+
+	this.objectsCount = 6;
+	this.moveStep = jCoord(0, -3*11);
+
+	this.curRow = -1;
+	this.curObject = -1;
+	this.curStartPos = jCoord(0, 0);
+	this.curPos = jCoord(0, 0);
+
+	this.GotoRow = function(rowNum, initPos)
+	{
+		if ((rowNum < 0) || (rowNum >= this.waypoints.length)) Finish(this.name+"::GotoRow wrong rowNum = "+rowNum);
+		this.curRow = rowNum;                                                          
+		this.curObject = 0;
+		for (var i = 0; i < this.waypointsCount; i++)
+		{
+			MoveToPosSafe(jCoord(initPos.x + this.waypoints[this.curRow][i][0]*11, initPos.y + this.waypoints[this.curRow][i][1]*11));
+		}
+		this.curStartPos = jCoord(initPos.x + this.waypoints[this.curRow][this.waypointsCount-1][0]*11, initPos.y + this.waypoints[this.curRow][this.waypointsCount-1][1]*11);
+		this.curPos = this.curStartPos;
+	};
+	this.GotoNext = function()
+	{
+		if (this.curRow < 0) Finish(this.name+"::GotoNext wrong rowNum = "+this.curRow);
+		if (this.curObject >= this.objectsCount-1) return false;
+		this.curObject++;
+		this.curPos = jCoord(this.curStartPos.x + this.curObject*this.moveStep.x, this.curStartPos.y + this.curObject*this.moveStep.y);
+		MoveToPosSafe(this.curPos);
+		return true;
+	};
+	this.Goto = function(num)
+	{
+		if (this.curRow < 0) Finish(this.name+"::Goto wrong rowNum = "+this.curRow);
+		if ((num < 0) || (num >= this.objectsCount)) Finish(this.name+"::Goto wrong num = "+num);
+		this.curObject = num;
+		this.curPos = jCoord(this.curStartPos.x + this.curObject*this.moveStep.x, this.curStartPos.y + this.curObject*this.moveStep.y);
+		MoveToPosSafe(this.curPos);
+	};
+
+	this.GetCoal = function(count)
+	{
+		if (this.curRow < 0) Finish(this.name+"::GetCoal wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::GetCoal not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var obj = GetKiln(this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::GetCoal obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		var wnd = GetWindow("Kiln");
+		var objInv = wnd.getInventories()[0];
+		var objItems = objInv.getItems("/coal");
+		var objCount = objItems.length;
+
+		var transferCount = Math.min(GetInvFree(), Math.min(objCount, count));
+
+		for (var s = 0; s < transferCount; s++)
+		{
+			objItems[s].transfer();
+		}
+		while (objInv.getItems("/coal").length > (objCount - transferCount)) jSleep(300);
+		return transferCount;
+	};
+	this.PutBlocks = function(count)
+	{
+		if (this.curRow < 0) Finish(this.name+"::PutBlocks wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::PutBlocks not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var obj = GetKiln(this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::PutBlock obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		var inv = checkInventory();
+		var invItems = inv.getItems("/wood");
+		var invCount = invItems.length;
+		if (invCount == 0) return 0;
+
+		if (GetObjFree("Kiln") < 25) return 0; // not empty
+
+		var transferCount = Math.min(20, Math.min(invCount, count));
+
+		for (var s = 0; s < transferCount; s++)
+		{
+			invItems[s].transfer();
+		}
+		while (inv.getItems("/wood").length > (invCount - transferCount)) jSleep(300);
+		return transferCount;
+	};
+	this.PutFuel = function()
+	{
+		if (this.curRow < 0) Finish(this.name+"::PutFuel wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::PutFuel not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var inv = checkInventory();
+		var invItems = inv.getItems("/wood");
+		var invCount = invItems.length;
+		if (invCount == 0) return false;
+
+		var obj = jFindObjectWithOffset("/kiln", this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::PutFuel obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		invItems[0].take();
+		while (!jIsDragging()) jSleep(300);
+
+		obj.interactClick(0);
+		while (jIsDragging()) jSleep(300);
+		return true;
+	};
+	this.Light = function()
+	{
+		if (this.curRow < 0) Finish(this.name+"::Light wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::Light not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		DropFromCursor();
+
+		var obj = GetKiln(this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::Light obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		if (CanLight(obj))
+		{
+			while (true)
+			{
+				var wnd = GetWindow("Kiln");
+				wnd.pushButton("Light");
+				if (IsBurning(obj)) break;
+				jSleep(300);
+			}
+		}
+	};
+}
+
+//---------------------------------------------------------------------
+function CoalChests()
+{
+	this.name = "CoalChests";
+	this.offset =
+	[
+		[0, -1],
+	];	
+	this.searchRadius = 1;
+	this.waypoints =
+	[
+		[[2, -2], [4, -4]],
+	];
+	this.waypointsCount = 2;
+
+	this.objectsCount = 1;
+	this.moveStep = jCoord(0, 0*11);
+
+	this.curRow = -1;
+	this.curObject = -1;
+	this.curStartPos = jCoord(0, 0);
+	this.curPos = jCoord(0, 0);
+
+	this.GotoRow = function(rowNum, initPos)
+	{
+		if ((rowNum < 0) || (rowNum >= this.waypoints.length)) Finish(this.name+"::GotoRow wrong rowNum = "+rowNum);
+		this.curRow = rowNum;                                                          
+		this.curObject = 0;
+		for (var i = 0; i < this.waypointsCount; i++)
+		{
+			MoveToPosSafe(jCoord(initPos.x + this.waypoints[this.curRow][i][0]*11, initPos.y + this.waypoints[this.curRow][i][1]*11));
+		}
+		this.curStartPos = jCoord(initPos.x + this.waypoints[this.curRow][this.waypointsCount-1][0]*11, initPos.y + this.waypoints[this.curRow][this.waypointsCount-1][1]*11);
+		this.curPos = this.curStartPos;
+	};
+	this.GotoNext = function()
+	{
+		if (this.curRow < 0) Finish(this.name+"::GotoNext wrong rowNum = "+this.curRow);
+		if (this.curObject >= this.objectsCount-1) return false;
+		this.curObject++;
+		this.curPos = jCoord(this.curStartPos.x + this.curObject*this.moveStep.x, this.curStartPos.y + this.curObject*this.moveStep.y);
+		MoveToPosSafe(this.curPos);
+		return true;
+	};
+	this.Goto = function(num)
+	{
+		if (this.curRow < 0) Finish(this.name+"::Goto wrong rowNum = "+this.curRow);
+		if ((num < 0) || (num >= this.objectsCount)) Finish(this.name+"::Goto wrong num = "+num);
+		this.curObject = num;
+		this.curPos = jCoord(this.curStartPos.x + this.curObject*this.moveStep.x, this.curStartPos.y + this.curObject*this.moveStep.y);
+		MoveToPosSafe(this.curPos);
+	};
+
+	this.GetCoal = function(count)
+	{
+		if (this.curRow < 0) Finish(this.name+"::GetCoal wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::GetCoal not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var obj = GetLC(this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::GetCoal obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		var wnd = GetWindow("Chest");
+		var objInv = wnd.getInventories()[0];
+		var objItems = objInv.getItems("/coal");
+		var objCount = objItems.length;
+
+		var transferCount = Math.min(GetInvFree(), Math.min(objCount, count));
+
+		for (var s = 0; s < transferCount; s++)
+		{
+			objItems[s].transfer();
+		}
+		while (objInv.getItems("/coal").length > (objCount - transferCount)) jSleep(300);
+		return transferCount;
+	};
+	this.PutCoal = function(count)
+	{
+		if (this.curRow < 0) Finish(this.name+"::PutCoal wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::PutCoal not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var obj = GetLC(this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::PutCoal obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		var inv = checkInventory();
+		var invItems = inv.getItems("/coal");
+		var invCount = invItems.length;
+		
+		var transferCount = Math.min(GetObjFree("Chest"), Math.min(invCount, count));
+
+		for (var s = 0; s < transferCount; s++)
+		{
+			invItems[s].transfer();
+		}
+		while (inv.getItems("/coal").length > (invCount - transferCount)) jSleep(300);
+		return transferCount;
+	};
+}
+
+//---------------------------------------------------------------------
+function MetalChests()
+{
+	this.name = "MetalChests";
+	this.offset =
+	[
+		[1, 0],
+	];	
+	this.searchRadius = 1;
+	this.waypoints =
+	[
+		[[-1, 0], [-1, 1]],
+	];
+	this.waypointsCount = 2;
+
+	this.objectsCount = 13;
+	this.moveStep = jCoord(0, 1*11);
+
+	this.curRow = -1;
+	this.curObject = -1;
+	this.curStartPos = jCoord(0, 0);
+	this.curPos = jCoord(0, 0);
+
+	this.cast = "/bar-castiron";
+	this.wrought = "/bar-wroughtiron";
+	this.steel = "/bar-steel";
+	this.anyMetal = "/bar-";
+
+	this.GotoRow = function(rowNum, initPos)
+	{
+		if ((rowNum < 0) || (rowNum >= this.waypoints.length)) Finish(this.name+"::GotoRow wrong rowNum = "+rowNum);
+		this.curRow = rowNum;                                                          
+		this.curObject = 0;
+		for (var i = 0; i < this.waypointsCount; i++)
+		{
+			MoveToPosSafe(jCoord(initPos.x + this.waypoints[this.curRow][i][0]*11, initPos.y + this.waypoints[this.curRow][i][1]*11));
+		}
+		this.curStartPos = jCoord(initPos.x + this.waypoints[this.curRow][this.waypointsCount-1][0]*11, initPos.y + this.waypoints[this.curRow][this.waypointsCount-1][1]*11);
+		this.curPos = this.curStartPos;
+	};
+	this.GotoNext = function()
+	{
+		if (this.curRow < 0) Finish(this.name+"::GotoNext wrong rowNum = "+this.curRow);
+		if (this.curObject >= this.objectsCount-1) return false;
+		this.curObject++;
+		this.curPos = jCoord(this.curStartPos.x + this.curObject*this.moveStep.x, this.curStartPos.y + this.curObject*this.moveStep.y);
+		MoveToPosSafe(this.curPos);
+		return true;
+	};
+	this.Goto = function(num)
+	{
+		if (this.curRow < 0) Finish(this.name+"::Goto wrong rowNum = "+this.curRow);
+		if ((num < 0) || (num >= this.objectsCount)) Finish(this.name+"::Goto wrong num = "+num);
+		this.curObject = num;
+		this.curPos = jCoord(this.curStartPos.x + this.curObject*this.moveStep.x, this.curStartPos.y + this.curObject*this.moveStep.y);
+		MoveToPosSafe(this.curPos);
+	};
+
+	this.GetMetal = function(metalType, count)
+	{
+		if (this.curRow < 0) Finish(this.name+"::GetMetal wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::GetMetal not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var obj = GetLC(this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::GetMetal obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		var wnd = GetWindow("Chest");
+		var objInv = wnd.getInventories()[0];
+		var objItems = objInv.getItems(metalType);
+		var objCount = objItems.length;
+
+		var transferCount = Math.min(GetInvFree(), Math.min(objCount, count));
+
+		for (var s = 0; s < transferCount; s++)
+		{
+			objItems[s].transfer();
+		}
+		while (objInv.getItems(metalType).length > (objCount - transferCount)) jSleep(300);
+		return transferCount;
+	};
+	this.PutMetal = function(metalType, count)
+	{
+		if (this.curRow < 0) Finish(this.name+"::PutMetal wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::PutMetal not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var obj = GetLC(this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::PutMetal obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		var inv = checkInventory();
+		var invItems = inv.getItems(metalType);
+		var invCount = invItems.length;
+		
+		var transferCount = Math.min(GetObjFree("Chest"), Math.min(invCount, count));
+
+		for (var s = 0; s < transferCount; s++)
+		{
+			invItems[s].transfer();
+		}
+		while (inv.getItems(metalType).length > (invCount - transferCount)) jSleep(300);
+		return transferCount;
+	};
+}
+
+//---------------------------------------------------------------------
+function OreChests()
+{
+	this.name = "OreChests";
+	this.offset =
+	[
+		[-1, 0],
+	];	
+	this.searchRadius = 1;
+	this.waypoints =
+	[
+		[[3, 0], [3, 2]],
+	];
+	this.waypointsCount = 2;
+
+	this.objectsCount = 12;
+	this.moveStep = jCoord(0, 1*11);
+
+	this.curRow = -1;
+	this.curObject = -1;
+	this.curStartPos = jCoord(0, 0);
+	this.curPos = jCoord(0, 0);
+
+	this.GotoRow = function(rowNum, initPos)
+	{
+		if ((rowNum < 0) || (rowNum >= this.waypoints.length)) Finish(this.name+"::GotoRow wrong rowNum = "+rowNum);
+		this.curRow = rowNum;                                                          
+		this.curObject = 0;
+		for (var i = 0; i < this.waypointsCount; i++)
+		{
+			MoveToPosSafe(jCoord(initPos.x + this.waypoints[this.curRow][i][0]*11, initPos.y + this.waypoints[this.curRow][i][1]*11));
+		}
+		this.curStartPos = jCoord(initPos.x + this.waypoints[this.curRow][this.waypointsCount-1][0]*11, initPos.y + this.waypoints[this.curRow][this.waypointsCount-1][1]*11);
+		this.curPos = this.curStartPos;
+	};
+	this.GotoNext = function()
+	{
+		if (this.curRow < 0) Finish(this.name+"::GotoNext wrong rowNum = "+this.curRow);
+		if (this.curObject >= this.objectsCount-1) return false;
+		this.curObject++;
+		this.curPos = jCoord(this.curStartPos.x + this.curObject*this.moveStep.x, this.curStartPos.y + this.curObject*this.moveStep.y);
+		MoveToPosSafe(this.curPos);
+		return true;
+	};
+	this.Goto = function(num)
+	{
+		if (this.curRow < 0) Finish(this.name+"::Goto wrong rowNum = "+this.curRow);
+		if ((num < 0) || (num >= this.objectsCount)) Finish(this.name+"::Goto wrong num = "+num);
+		this.curObject = num;
+		this.curPos = jCoord(this.curStartPos.x + this.curObject*this.moveStep.x, this.curStartPos.y + this.curObject*this.moveStep.y);
+		MoveToPosSafe(this.curPos);
+	};
+	this.GotoBack = function()
+	{
+		if (this.curRow < 0) Finish(this.name+"::GotoBack wrong rowNum = "+this.curRow);
+		this.curObject = -1;
+		this.curPos = jCoord(this.curStartPos.x + this.curObject*this.moveStep.x, this.curStartPos.y + this.curObject*this.moveStep.y);
+		MoveToPosSafe(this.curPos);
+	};
+
+	this.GetOre = function(count)
+	{
+		if (this.curRow < 0) Finish(this.name+"::GetOre wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::GetOre not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var obj = GetLC(this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::GetOre obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		var wnd = GetWindow("Chest");
+		var objInv = wnd.getInventories()[0];
+		var objItems = objInv.getItems("/ore-iron");
+		var objCount = objItems.length;
+
+		var invFree = GetInvFree();
+
+		var transferCount = Math.min(invFree, Math.min(objCount, count));
+
+		for (var s = 0; s < transferCount; s++)
+		{
+			objItems[s].transfer();
+		}
+		while (invFree - GetInvFree() < transferCount) jSleep(300);
+		return transferCount;
+	};
+	this.PutOre = function(count)
+	{
+		if (this.curRow < 0) Finish(this.name+"::PutOre wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::PutOre not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var obj = GetLC(this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::PutOre obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		var inv = checkInventory();
+		var invItems = inv.getItems("/ore-iron");
+		var invCount = invItems.length;
+		
+		var transferCount = Math.min(GetObjFree("Chest"), Math.min(invCount, count));
+
+		for (var s = 0; s < transferCount; s++)
+		{
+			invItems[s].transfer();
+		}
+		while (inv.getItems("/ore-iron").length > (invCount - transferCount)) jSleep(300);
+		return transferCount;
+	};
+}
+
+//---------------------------------------------------------------------
+function Smelters()
+{
+	this.name = "Smelters";
+	this.offset =
+	[
+		[2, 0],
+		[2, 0],
+		[2, 0],
+	];	
+	this.searchRadius = 15;
+	this.waypoints =
+	[
+		[[0, -2], [11, -2], [11, 0]],
+		[[0, -2], [7, -2], [7, 0]],
+		[[0, -2], [3, -2], [3, 0]],
+	];
+	this.waypointsCount = 3;
+
+	this.objectsCount = 7;
+	this.moveStep = jCoord(0, 2*11);
+
+	this.curRow = -1;
+	this.curObject = -1;
+	this.curStartPos = jCoord(0, 0);
+	this.curPos = jCoord(0, 0);
+
+	this.GotoRow = function(rowNum, initPos)
+	{
+		if ((rowNum < 0) || (rowNum >= this.waypoints.length)) Finish(this.name+"::GotoRow wrong rowNum = "+rowNum);
+		this.curRow = rowNum;                                                          
+		this.curObject = 0;
+		for (var i = 0; i < this.waypointsCount; i++)
+		{
+			MoveToPosSafe(jCoord(initPos.x + this.waypoints[this.curRow][i][0]*11, initPos.y + this.waypoints[this.curRow][i][1]*11));
+		}
+		this.curStartPos = jCoord(initPos.x + this.waypoints[this.curRow][this.waypointsCount-1][0]*11, initPos.y + this.waypoints[this.curRow][this.waypointsCount-1][1]*11);
+		this.curPos = this.curStartPos;
+	};
+	this.GotoBack = function()
+	{
+		if (this.curRow < 0) Finish(this.name+"::GotoBack wrong rowNum = "+this.curRow);
+		this.curObject = -1;
+		this.curPos = jCoord(this.curStartPos.x + this.curObject*this.moveStep.x, this.curStartPos.y + this.curObject*this.moveStep.y);
+		MoveToPosSafe(this.curPos);
+	};
+
+	this.GotoNext = function()
+	{
+		if (this.curRow < 0) Finish(this.name+"::GotoNext wrong rowNum = "+this.curRow);
+		if (this.curObject >= this.objectsCount-1) return false;
+		this.curObject++;
+		this.curPos = jCoord(this.curStartPos.x + this.curObject*this.moveStep.x, this.curStartPos.y + this.curObject*this.moveStep.y);
+		MoveToPosSafe(this.curPos);
+		return true;
+	};
+	this.Goto = function(num)
+	{
+		if (this.curRow < 0) Finish(this.name+"::Goto wrong rowNum = "+this.curRow);
+		if ((num < 0) || (num >= this.objectsCount)) Finish(this.name+"::Goto wrong num = "+num);
+		this.curObject = num;
+		this.curPos = jCoord(this.curStartPos.x + this.curObject*this.moveStep.x, this.curStartPos.y + this.curObject*this.moveStep.y);
+		MoveToPosSafe(this.curPos);
+	};
+
+	this.GetCast = function(count)
+	{
+		if (this.curRow < 0) Finish(this.name+"::GetCast wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 15) Finish(this.name+"::GetCast not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var obj = GetSmelter(this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::GetCast obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		var wnd = GetWindow("Ore Smelter");
+		var objInv = wnd.getInventories()[0];
+		var objItems = objInv.getItems("/bar-castiron");
+		var objCount = objItems.length;
+
+		// drop stones, copper, tin
+		var dropItems = objInv.getItems("/stone");
+		if (dropItems.length > 0)
+		{	
+			dropItems[0].dropSuchAll();
+			while (objInv.getItems("/stone").length > 0) jSleep(300);
+		}
+		var dropItems = objInv.getItems("/bar-copper");
+		if (dropItems.length > 0)
+		{	
+			dropItems[0].dropSuchAll();
+			while (objInv.getItems("/bar-copper").length > 0) jSleep(300);
+		}
+		var dropItems = objInv.getItems("/bar-tin");
+		if (dropItems.length > 0)
+		{	
+			dropItems[0].dropSuchAll();
+			while (objInv.getItems("/bar-tin").length > 0) jSleep(300);
+		}
+
+		var transferCount = Math.min(GetInvFree(), Math.min(objCount, count));
+
+		for (var s = 0; s < transferCount; s++)
+		{
+			objItems[s].transfer();
+		}
+		while (objInv.getItems("/bar-castiron").length > (objCount - transferCount)) jSleep(300);
+
+		return (transferCount == objCount);
+	};
+	this.PutOre = function(count)
+	{
+		if (this.curRow < 0) Finish(this.name+"::PutOre wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::PutOre not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var obj = GetSmelter(this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::PutOre obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		var inv = checkInventory();
+		var invItems = inv.getItems("/ore-iron");
+		var invCount = invItems.length;
+		if (invCount == 0) return 0;
+
+		var objFree = GetObjFree("Ore Smelter");
+		if (GetObjResCount("Ore Smelter", "/ore-iron") + objFree < 25) return 0; // not only ore
+
+		var transferCount = Math.min(objFree, Math.min(invCount, count));
+
+		for (var s = 0; s < transferCount; s++)
+		{
+			invItems[s].transfer();
+		}
+		while (inv.getItems("/ore-iron").length > (invCount - transferCount)) jSleep(300);
+		return transferCount;
+	};
+	this.GetOreCount = function()
+	{
+		if (this.curRow < 0) Finish(this.name+"::GetOreCount wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::GetOreCount not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var obj = GetSmelter(this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::GetOreCount obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+		return GetObjResCount("Ore Smelter", "/ore-iron");
+	};
+
+	this.HasFuel = function()
+	{
+		if (this.curRow < 0) Finish(this.name+"::HasFuel wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::HasFuel not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var obj = jFindObjectWithOffset("/smelter", this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::HasFuel obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		return HasFuel(obj);
+	};
+	this.PutFuel = function()
+	{
+		if (this.curRow < 0) Finish(this.name+"::PutFuel wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::PutFuel not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var inv = checkInventory();
+		var invItems = inv.getItems("/coal");
+		var invCount = invItems.length;
+		if (invCount == 0) return false;
+
+		var obj = jFindObjectWithOffset("/smelter", this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::PutFuel obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		invItems[0].take();
+		while (!jIsDragging()) jSleep(300);
+
+		obj.interactClick(0);
+		while (jIsDragging()) jSleep(300);
+		return true;
+	};
+	this.Light = function()
+	{
+		if (this.curRow < 0) Finish(this.name+"::Light wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::Light not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		DropFromCursor();
+
+		var obj = GetSmelter(this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::Light obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		if (CanLight(obj))
+		{
+			while (true)
+			{
+				var wnd = GetWindow("Ore Smelter");
+				wnd.pushButton("Light");
+				if (IsBurning(obj)) break;
+				jSleep(300);
+			}
+		}
+	};
+}
+
+//---------------------------------------------------------------------
+function Forges()
+{
+	this.name = "Forges";
+	this.offset =
+	[
+		[-1, 0],
+	];	
+	this.searchRadius = 1;
+	this.waypoints =
+	[
+		[[-1, -1]],
+	];
+	this.waypointsCount = 1;
+
+	this.objectsCount = 15;
+	this.moveStep = jCoord(0, 1*11);
+
+	this.curRow = -1;
+	this.curObject = -1;
+	this.curStartPos = jCoord(0, 0);
+	this.curPos = jCoord(0, 0);
+
+	this.GotoRow = function(rowNum, initPos)
+	{
+		if ((rowNum < 0) || (rowNum >= this.waypoints.length)) Finish(this.name+"::GotoRow wrong rowNum = "+rowNum);
+		this.curRow = rowNum;                                                          
+		this.curObject = 0;
+		for (var i = 0; i < this.waypointsCount; i++)
+		{
+			MoveToPosSafe(jCoord(initPos.x + this.waypoints[this.curRow][i][0]*11, initPos.y + this.waypoints[this.curRow][i][1]*11));
+		}
+		this.curStartPos = jCoord(initPos.x + this.waypoints[this.curRow][this.waypointsCount-1][0]*11, initPos.y + this.waypoints[this.curRow][this.waypointsCount-1][1]*11);
+		this.curPos = this.curStartPos;
+	};
+	this.GotoNext = function()
+	{
+		if (this.curRow < 0) Finish(this.name+"::GotoNext wrong rowNum = "+this.curRow);
+		if (this.curObject >= this.objectsCount-1) return false;
+		this.curObject++;
+		this.curPos = jCoord(this.curStartPos.x + this.curObject*this.moveStep.x, this.curStartPos.y + this.curObject*this.moveStep.y);
+		MoveToPosSafe(this.curPos);
+		return true;
+	};
+	this.Goto = function(num)
+	{
+		if (this.curRow < 0) Finish(this.name+"::Goto wrong rowNum = "+this.curRow);
+		if ((num < 0) || (num >= this.objectsCount)) Finish(this.name+"::Goto wrong num = "+num);
+		this.curObject = num;
+		this.curPos = jCoord(this.curStartPos.x + this.curObject*this.moveStep.x, this.curStartPos.y + this.curObject*this.moveStep.y);
+		MoveToPosSafe(this.curPos);
+	};
+
+	this.GetBloom = function(count)
+	{
+		if (this.curRow < 0) Finish(this.name+"::GetBloom wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::GetBloom not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var obj = GetForge(this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::GetBloom obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		var wnd = GetWindow("Finery Forge");
+		var objInv = wnd.getInventories()[0];
+		var objItems = objInv.getItems("/bloom");
+		var objCount = objItems.length;
+
+		// drop slag
+		var dropItems = objInv.getItems("/slag");
+		if (dropItems.length > 0)
+		{	
+			dropItems[0].dropSuchAll();
+			while (objInv.getItems("/slag").length > 0) jSleep(300);
+		}
+
+		var transferCount = Math.min(GetInvFree(), Math.min(objCount, count));
+
+		for (var s = 0; s < transferCount; s++)
+		{
+			objItems[s].transfer();
+		}
+		while (objInv.getItems("/bloom").length > (objCount - transferCount)) jSleep(300);
+
+		return (transferCount < objCount);
+	};
+	this.PutCast = function(count)
+	{
+		if (this.curRow < 0) Finish(this.name+"::PutCast wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::PutCast not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var obj = GetForge(this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::PutCast obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		var inv = checkInventory();
+		var invItems = inv.getItems("/bar-castiron");
+		var invCount = invItems.length;
+		if (invCount == 0) return 0;
+
+		var objFree = GetObjFree("Finery Forge");
+		if (GetObjResCount("Finery Forge", "/bar-castiron") + objFree < 9) return 0; // not only cast
+
+		var transferCount = Math.min(objFree, Math.min(invCount, count));
+
+		for (var s = 0; s < transferCount; s++)
+		{
+			invItems[s].transfer();
+		}
+		while (inv.getItems("/bar-castiron").length > (invCount - transferCount)) jSleep(300);
+		return transferCount;
+	};
+	this.GetCastCount = function()
+	{
+		if (this.curRow < 0) Finish(this.name+"::GetCastCount wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::GetCastCount not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var obj = GetForge(this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::GetCastCount obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+		return GetObjResCount("Finery Forge", "/bar-castiron");
+	};
+
+	this.HasFuel = function()
+	{
+		if (this.curRow < 0) Finish(this.name+"::HasFuel wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::HasFuel not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var obj = jFindObjectWithOffset("/fforge", this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::HasFuel obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		return HasFuel(obj);
+	};
+	this.PutFuel = function()
+	{
+		if (this.curRow < 0) Finish(this.name+"::PutFuel wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::PutFuel not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var inv = checkInventory();
+		var invItems = inv.getItems("/coal");
+		var invCount = invItems.length;
+		if (invCount == 0) return false;
+
+		var obj = jFindObjectWithOffset("/fforge", this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::PutFuel obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		invItems[0].take();
+		while (!jIsDragging()) jSleep(300);
+
+		obj.interactClick(0);
+		while (jIsDragging()) jSleep(300);
+		return true;
+	};
+	this.Light = function()
+	{
+		if (this.curRow < 0) Finish(this.name+"::Light wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::Light not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		DropFromCursor();
+
+		var obj = GetForge(this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::Light obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		if (CanLight(obj))
+		{
+			while (true)
+			{
+				var wnd = GetWindow("Finery Forge");
+				wnd.pushButton("Light");
+				if (IsBurning(obj)) break;
+				jSleep(300);
+			}
+		}
+	};
+}
+
+//---------------------------------------------------------------------
+function GetCoal(fuelNeed)
+{
+	var kilns = new Kilns();
+	var coalChests = new CoalChests();
+
+	TeleportHF();
+	FromCursorToInv("/coal");
+	if (fuelNeed - GetInvResCount("/coal") <= 0) return true;
+	coalChests.GotoRow(0, jMyCoords());
+	for (var i = 0; i < coalChests.objectsCount; i++)
+	{
+		var count = fuelNeed - GetInvResCount("/coal");
+		if (count <= 0) return true;
+		coalChests.Goto(i);
+		coalChests.GetCoal(count);
+	}
+	if (fuelNeed - GetInvResCount("/coal") <= 0) return true;
+
+	for (var r = 0; r < kilns.waypoints.length; r++)
+	{
+		TeleportHF();
+		kilns.GotoRow(r, jMyCoords());
+		for (var i = 0; i < kilns.objectsCount; i++)
+		{
+			var count = fuelNeed - GetInvResCount("/coal");
+			if (count <= 0) return true;
+			kilns.Goto(i);
+			kilns.GetCoal(count);
+		}
+	}
+	return (fuelNeed - GetInvResCount("/coal") <= 0);
+}
+//---------------------------------------------------------------------
+function PutExcessCoal()
+{
+	FromCursorToInv("/coal");
+	if (GetInvResCount("/coal") == 0) return true;
+
+	var coalChests = new CoalChests();
+
+	TeleportHF();
+
+	coalChests.GotoRow(0, jMyCoords());
+	for (var i = 0; i < coalChests.objectsCount; i++)
+	{
+		var count = GetInvResCount("/coal");
+		if (count <= 0) return true;
+		coalChests.Goto(i);
+		coalChests.PutCoal(count);
+	}
+	return (GetInvResCount("/coal") == 0);
+}
+
+//---------------------------------------------------------------------
+function ForgeWrought()
+{
+	var forges = new Forges();
+	var metalChests = new MetalChests();
+	
+	// move cast from smelters to metal chests
+	while (true)
+	{
+		// take cast form metal chests
+		TeleportHF();
+		metalChests.GotoRow(0, jMyCoords());
+		var metalChestsDone = false;
+		for (var i = 0; i < metalChests.objectsCount; i++)
+		{
+			metalChests.Goto(i);
+			var toTransfer = GetInvFree();
+			var transferred = metalChests.GetMetal(metalChests.cast, GetInvFree());
+			if (toTransfer == transferred) break;
+			if (i+1 == metalChests.objectsCount) metalChestsDone = true; 
+		}
+		// put cast to forges
+		TeleportHF();
+		forges.GotoRow(0, jMyCoords());
+		var forgesDone = false;
+		for (var i = 0; i < forges.objectsCount; i++)
+		{
+			forges.Goto(i);
+			var toTransfer = GetInvResCount(metalChests.cast);
+			var transferred = forges.PutCast(toTransfer);
+			if (toTransfer == transferred) break;
+			if (i+1 == forges.objectsCount) forgesDone = true;
+		}
+		if (metalChestsDone || forgesDone) break;
+	}
+	// drop excess cast to metal chests
+	if (GetInvResCount(metalChests.cast) > 0)
+	{
+		TeleportHF();
+		metalChests.GotoRow(0, jMyCoords());
+		for (var i = 0; i < metalChests.objectsCount; i++)
+		{
+			metalChests.Goto(i);
+			var toTransfer = GetInvResCount(metalChests.cast);
+			var transferred = metalChests.PutMetal(metalChests.cast, toTransfer);
+			if (toTransfer == transferred) break;
+		}
+	}
+
+	// take coal
+	if (!GetCoal(forges.objectsCount))
+	{
+		PutExcessCoal();
+		jLogout();
+		Finish("finished. no coal left");
+	}
+	// put coal to forges
+	TeleportHF();
+	forges.GotoRow(0, jMyCoords());
+	for (var i = 0; i < forges.objectsCount; i++)
+	{
+		forges.Goto(i);
+		if (forges.GetCastCount() > 0)
+		{
+			if (!forges.HasFuel()) forges.PutFuel();
+		}
+	}
+	// put excess coal to coal chest
+	if (!PutExcessCoal())
+	{
+		jLogout();
+		Finish("finished. no space for excess coal.");
+	}
+
+	// wait 6 min
+	TeleportHF();
+	jSleep(6*60*1000);
+
+	// light forges
+	TeleportHF();
+	forges.GotoRow(0, jMyCoords());
+	for (var i = 0; i < forges.objectsCount; i++)
+	{
+		forges.Goto(i);
+		if (forges.HasFuel()) forges.Light();
+	}
+
+	// wait 6 min
+	TeleportHF();
+	jSleep(6*60*1000);
+
+	// move bloom form forges to metal chests
+	while (true)
+	{
+		// take bloom form forges
+		TeleportHF();
+		forges.GotoRow(0, jMyCoords());
+		var forgesDone = false;
+		for (var i = 0; i < forges.objectsCount; i++)
+		{
+			forges.Goto(i);
+			var toTransfer = GetInvFree();
+			var transferred = forges.GetBloom(toTransfer);
+			if (toTransfer == transferred) break;
+			if (i+1 == forges.objectsCount) forgesDone = true;
+		}
+		// put bloom to metal chests
+		TeleportHF();
+		metalChests.GotoRow(0, jMyCoords());
+		var metalChestsDone = false;
+		for (var i = 0; i < metalChests.objectsCount; i++)
+		{
+			metalChests.Goto(i);
+			var toTransfer = GetInvResCount("/bloom");
+			var transferred = metalChests.PutMetal("/bloom", toTransfer);
+			if (toTransfer == transferred) break;
+			if (i+1 == metalChests.objectsCount)
+			{
+				Finish("finished. no more space in metal chests for bloom");
+			}
+		}
+		if (forgesDone) break;
+	}
+}
+
+//---------------------------------------------------------------------
+function ForgeWroughtOnly()
+{
+	while (true)
+	{
+		ForgeWrought();
+	}
+}
+
+//---------------------------------------------------------------------
+function SmeltOre(withWrought)
+{
+	var smelters = new Smelters();
+	var metalChests = new MetalChests();
+	var oreChests = new OreChests();
+
+	// move ore from ore chests to smelters
+	var rowDone = -1;
+	oreToSmeltersLoop:
+	while (true)
+	{
+		// take ore form ore chests
+		TeleportHF();
+		oreChests.GotoRow(0, jMyCoords());
+		var oreChestsDone = false;
+		for (var i = 0; i < oreChests.objectsCount; i++)
+		{
+			oreChests.Goto(i);
+			var toTransfer = GetInvFree();
+			var transferred = oreChests.GetOre(GetInvFree());
+			if (toTransfer == transferred) break;
+			if (i+1 == oreChests.objectsCount) oreChestsDone = true; 
+		}
+		// put ore to smelters
+		smeltersRowsLoop:
+		for (var r = rowDone+1; r < smelters.waypoints.length; r++)
+		{
+			TeleportHF();
+			smelters.GotoRow(r, jMyCoords());
+			for (var i = 0; i < smelters.objectsCount; i++)
+			{
+				smelters.Goto(i);
+				var toTransfer = GetInvResCount("/ore-iron");
+				var transferred = smelters.PutOre(toTransfer);
+				if (toTransfer == transferred) break smeltersRowsLoop;
+			}
+			rowDone = r;
+			if (r+1 == smelters.waypoints.length) break oreToSmeltersLoop; // no more space in smelters
+		}
+		if (oreChestsDone) break oreToSmeltersLoop; // no more ore in chests
+	}
+	// put excess ore back to ore chests
+	TeleportHF();
+	oreChests.GotoRow(0, jMyCoords());
+	for (var i = 0; i < oreChests.objectsCount; i++)
+	{
+		oreChests.Goto(i);
+		var toTransfer = GetInvResCount("/ore-iron");
+		var transferred = oreChests.PutOre(toTransfer);
+		if (toTransfer == transferred) break;
+	}
+
+	// take coal
+	if (!GetCoal(smelters.waypoints.length*smelters.objectsCount))
+	{
+		PutExcessCoal();
+		jLogout();
+		Finish("finished. no coal left");
+	}
+
+	// put coal where ore and no fuel
+	for (var r = 0; r < smelters.waypoints.length; r++)
+	{
+		TeleportHF();
+		smelters.GotoRow(r, jMyCoords());
+		for (var i = 0; i < smelters.objectsCount; i++)
+		{
+			smelters.Goto(i);
+			if (smelters.GetOreCount() == 25)
+			{
+//				if (smelters.HasFuel()) smelters.Light();
+//				else smelters.PutFuel();
+				if (!smelters.HasFuel()) smelters.PutFuel();
+			}
+		}
+	}
+
+	// put excess coal to coal chest
+	if (!PutExcessCoal())
+	{
+		jLogout();
+		Finish("finished. no space for excess coal.");
+	}
+
+	if (withWrought)
+	{
+		ForgeWrought();
+
+		// wait to 17 min
+		TeleportHF();
+		jSleep(2*60*1000);
+	}
+	else
+	{
+		// wait 17 min
+		TeleportHF();
+		jSleep(17*60*1000);
+	}
+
+	// light where has fuel
+	for (var r = 0; r < smelters.waypoints.length; r++)
+	{
+		TeleportHF();
+		smelters.GotoRow(r, jMyCoords());
+		for (var i = 0; i < smelters.objectsCount; i++)
+		{
+			smelters.Goto(i);
+			if (smelters.GetOreCount() == 25)
+			{
+				if (smelters.HasFuel()) smelters.Light();
+			}
+		}
+	}
+
+	// wait coal burn
+	TeleportHF();
+	jSleep(6*60*1000);
+
+	// move cast from smelters to metal chests
+	for (var r = 0; r < smelters.waypoints.length; r++)
+	{
+		var objDoneNum = -1;
+		while (true)
+		{
+			if ((objDoneNum+1) >= smelters.objectsCount) break;
+			// get casts
+			TeleportHF();
+			smelters.GotoRow(r, jMyCoords());
+			for (var i = objDoneNum+1; i < smelters.objectsCount; i++)
+			{
+				smelters.Goto(i);
+				if (!smelters.GetCast(GetInvFree())) break;
+				objDoneNum = i;
+			}
+
+			// drop to metalChests
+			TeleportHF();
+			metalChests.GotoRow(0, jMyCoords());
+			for (var i = 0; i < metalChests.objectsCount; i++)
+			{
+				metalChests.Goto(i);
+				metalChests.PutMetal(metalChests.cast, GetInvResCount(metalChests.cast));
+				if (GetInvResCount(metalChests.cast) == 0)
+				{
+					if (i+1 >= metalChests.objectsCount)
+					{
+						Finish("finished. not enough space in metal chests.");
+					}
+					break;
+				} 
+			}
+		}
+	}
+}
+
+function MakeWrought(withWrought)
+{
+	while (true)
+	{
+		SmeltOre(withWrought);
+	}
+}
+
+//---------------------------------------------------------------------
+// deliver ore
+//---------------------------------------------------------------------
+function DeliverOre()
+{
+	var oreChests = new OreChests();
+	oreChests.offset =
+	[
+		[1, 0],
+	];	
+	oreChests.searchRadius = 1;
+	oreChests.waypoints =
+	[
+		[[1, -4], [1, 3]],
+	];
+	oreChests.waypointsCount = 2;
+	oreChests.objectsCount = 11;
+
+	jSetSpeed(2);
+	while (true)
+	{
+		TeleportHF();
+
+		// collect ore
+		while (true)
+		{
+			if (jIsDragging()) break;
+			var res = jFindObjectByName("/ore-iron", 40);
+			if (res == null)
+			{
+				jSleep(5*1000);
+				continue;
+			}
+			if (jMyCoords().dist(res.position()) > 18) MoveToPosSafe(res.position());
+			res.doClick(3, 0);
+			jSleep(100);
+		}
+		DropFromCursor();
+
+		// tp to totem
+		if (!TeleportToTotem())
+		{
+			Finish("finished. cannot teleport to totem.position maybe out of wine.");
+		}
+
+		// put ore to smelters
+		var waypoints = 
+		[
+			[6, 0],
+			[10, -1],
+			[32, -1],
+//			[36, -1],
+		];
+		var hfOffset = [35, 3];
+		// привязка
+		var totem = jFindObjectByName("vclaim", 10);
+		if (totem == null) Finish("finished. no totem O_o");
+		// move to factory
+		var initPos = totem.position();
+		for (var i = 0; i < waypoints.length; i++)
+		{
+			MoveToPosSafe(jCoord(initPos.x + waypoints[i][0]*11, initPos.y + waypoints[i][1]*11));
+		}
+
+		oreChests.GotoRow(0, jCoord(initPos.x+hfOffset[0]*11, initPos.y+hfOffset[1]*11));
+		oreChestsLoop:
+		while (true)
+		{
+			for (var i = 0; i < oreChests.objectsCount; i++)
+			{
+				oreChests.Goto(i);
+				var toTransfer = GetInvResCount("/ore-iron");
+				var transferred = oreChests.PutOre(toTransfer);
+				if (toTransfer == transferred) break oreChestsLoop;
+			}
+			oreChests.GotoBack();
+			jSleep(1*60*1000);
+		}
+	}
+}
+
+//---------------------------------------------------------------------
+// collect steel
+//---------------------------------------------------------------------
+
+//---------------------------------------------------------------------
+function Crucibles()
+{
+	this.name = "Crucibles";
+	this.offset =
+	[
+		[1, 0],
+
+		[-1, 0],
+		[1, 0],
+
+		[-1, 0],
+		[1, 0],
+
+		[-1, 0],
+		[1, 0],
+	];	
+	this.searchRadius = 1;
+	this.waypoints =
+	[
+		[[2, -3], [15, -3], [15, -8]],
+
+		[[2, -3], [14, -3], [14, -8]],
+		[[2, -3], [11, -3], [11, -8]],
+
+		[[2, -3], [10, -3], [10, -8]],
+		[[2, -3], [7, -3], [7, -8]],
+
+		[[2, -3], [6, -3], [6, -8]],
+		[[2, -3], [3, -3], [3, -8]],
+	];
+	this.waypointsCount = 3;
+
+	this.objectsCount = 16;
+	this.moveStep = jCoord(0, -1*11);
+
+	this.curRow = -1;
+	this.curObject = -1;
+	this.curStartPos = jCoord(0, 0);
+	this.curPos = jCoord(0, 0);
+
+	this.GotoRow = function(rowNum, initPos)
+	{
+		if ((rowNum < 0) || (rowNum >= this.waypoints.length)) Finish(this.name+"::GotoRow wrong rowNum = "+rowNum);
+		this.curRow = rowNum;                                                          
+		this.curObject = 0;
+		for (var i = 0; i < this.waypointsCount; i++)
+		{
+			MoveToPosSafe(jCoord(initPos.x + this.waypoints[this.curRow][i][0]*11, initPos.y + this.waypoints[this.curRow][i][1]*11));
+		}
+		this.curStartPos = jCoord(initPos.x + this.waypoints[this.curRow][this.waypointsCount-1][0]*11, initPos.y + this.waypoints[this.curRow][this.waypointsCount-1][1]*11);
+		this.curPos = this.curStartPos;
+	};
+	this.GotoNext = function()
+	{
+		if (this.curRow < 0) Finish(this.name+"::GotoNext wrong rowNum = "+this.curRow);
+		if (this.curObject >= this.objectsCount-1) return false;
+		this.curObject++;
+		this.curPos = jCoord(this.curStartPos.x + this.curObject*this.moveStep.x, this.curStartPos.y + this.curObject*this.moveStep.y);
+		MoveToPosSafe(this.curPos);
+		return true;
+	};
+	this.Goto = function(num)
+	{
+		if (this.curRow < 0) Finish(this.name+"::Goto wrong rowNum = "+this.curRow);
+		if ((num < 0) || (num >= this.objectsCount)) Finish(this.name+"::Goto wrong num = "+num);
+		this.curObject = num;
+		this.curPos = jCoord(this.curStartPos.x + this.curObject*this.moveStep.x, this.curStartPos.y + this.curObject*this.moveStep.y);
+		MoveToPosSafe(this.curPos);
+	};
+
+	this.GetMetal = function(count)
+	{
+		if (this.curRow < 0) Finish(this.name+"::GetMetal wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::GetMetal not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var obj = GetCrucible(this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::GetMetal obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		var inv = checkInventory();
+		var invFreeSlots = inv.freeSlotsCoords();
+
+		var wnd = GetWindow("Steel Crucible");
+		var objInv = wnd.getInventories()[0];
+		var objItems = objInv.getItems("/bar-");
+		var objCount = objItems.length;
+
+		var transferCount = Math.min(GetInvFree(), Math.min(objCount, count));
+
+		var freeSlotNum = 0;
+		for (var s = 0; s < transferCount; s++)
+		{
+			while (!jIsDragging())
+			{
+				objItems[s].take();
+				jSleep(300);
+			}
+			while (jIsDragging())
+			{
+				inv.drop(invFreeSlots[freeSlotNum]);
+				jSleep(300);
+			}
+			freeSlotNum++;
+		}
+		while (objInv.getItems("/bar-").length > (objCount - transferCount)) jSleep(300);
+
+		return (transferCount == objCount);
+	};
+
+	this.PutWrought = function(count)
+	{
+		if (this.curRow < 0) Finish(this.name+"::PutWrought wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::PutWrought not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var obj = GetCrucible(this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::PutWrought obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		var inv = checkInventory();
+		var invItems = inv.getItems("/bar-wrought");
+		var invCount = invItems.length;
+		if (invCount == 0) return 0;
+
+		var wnd = GetWindow("Steel Crucible");
+		var objInv = wnd.getInventories()[0];
+		var objFree = objInv.freeSlots();
+		var objFreeSlots = objInv.freeSlotsCoords();
+
+		var transferCount = Math.min(objFree, Math.min(invCount, count));
+
+		var freeSlotNum = 0;
+		for (var s = 0; s < transferCount; s++)
+		{
+			while (!jIsDragging())
+			{
+				invItems[s].take();
+				jSleep(300);
+			}
+			while (jIsDragging())
+			{
+				objInv.drop(objFreeSlots[freeSlotNum]);
+				jSleep(300);
+			}
+			freeSlotNum++;
+		}
+		while (inv.getItems("/bar-wrought").length > (invCount - transferCount)) jSleep(300);
+
+		return transferCount;
+	};
+	this.PutCoal = function(count)
+	{
+		if (this.curRow < 0) Finish(this.name+"::PutCast wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::PutCast not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		var obj = GetCrucible(this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::PutCast obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		var inv = checkInventory();
+		var invItems = inv.getItems("/coal");
+		var invCount = invItems.length;
+		if (invCount == 0) return 0;
+
+		var wnd = GetWindow("Steel Crucible");
+		var objInv = wnd.getInventories()[1];
+		var objFree = objInv.freeSlots();
+		var objFreeSlots = objInv.freeSlotsCoords();
+
+		var transferCount = Math.min(objFree, Math.min(invCount, count));
+
+		var freeSlotNum = 0;
+		for (var s = 0; s < transferCount; s++)
+		{
+			while (!jIsDragging())
+			{
+				invItems[s].take();
+				jSleep(300);
+			}
+			while (jIsDragging())
+			{
+				objInv.drop(objFreeSlots[freeSlotNum]);
+				jSleep(300);
+			}
+			freeSlotNum++;
+		}
+		while (inv.getItems("/coal").length > (invCount - transferCount)) jSleep(300);
+
+		return transferCount;
+	};
+
+	this.Light = function()
+	{
+		if (this.curRow < 0) Finish(this.name+"::Light wrong rowNum = "+this.curRow);
+		if (jMyCoords().dist(this.curPos) > 11) Finish(this.name+"::Light not in place pos - "+jMyCoords()+", need - "+this.curPos);
+
+		DropFromCursor();
+
+		var obj = GetCrucible(this.searchRadius, jCoord(this.offset[this.curRow][0], this.offset[this.curRow][1]));
+		if (obj == null) Finish(this.name+"::Light obj not found rowNum = "+this.curRow+", objNum = "+this.curObject);
+
+		var wnd = GetWindow("Steel Crucible");
+		wnd.pushButton("Light");
+		jSleep(500);
+	};
+}
+
+function UnloadCrucibles()
+{
+	var crucibles = new Crucibles();
+	var metalChests = new MetalChests();
+
+	jSetSpeed(2);
+
+	for (var r = 0; r < crucibles.waypoints.length; r++)
+	{
+		var objDoneNum = -1;
+		while (true)
+		{
+			if ((objDoneNum+1) >= crucibles.objectsCount) break;
+			// get casts
+			TeleportHF();
+			crucibles.GotoRow(r, jMyCoords());
+			for (var i = objDoneNum+1; i < crucibles.objectsCount; i++)
+			{
+				crucibles.Goto(i);
+				if (!crucibles.GetMetal(GetInvFree())) break;
+				objDoneNum = i;
+			}
+
+			// drop to metalChests
+			TeleportHF();
+			metalChests.GotoRow(0, jMyCoords());
+			for (var i = 0; i < metalChests.objectsCount; i++)
+			{
+				metalChests.Goto(i);
+				metalChests.PutMetal(metalChests.anyMetal, GetInvResCount(metalChests.anyMetal));
+				if (GetInvResCount(metalChests.anyMetal) == 0)
+				{
+					if (i+1 >= metalChests.objectsCount)
+					{
+						Finish("finished. not enough space in metal chests.");
+					}
+					break;
+				} 
+			}
+		}
+	}
+	jPrint("done. all steel in chests.");
+	TeleportHF();
+}
+
+//---------------------------------------------------------------------
+// load steel crucibles
+//---------------------------------------------------------------------
+function LoadCrucibles()
+{
+	var crucibles = new Crucibles();
+	var metalChests = new MetalChests();
+	var kilns = new Kilns();
+
+	jSetSpeed(2);
+
+	var allOk = true;
+
+	var rowDone = -1;
+	wroughtToCruciblesLoop:
+	while (true)
+	{
+		// take wrought form metal chests
+		TeleportHF();
+		metalChests.GotoRow(0, jMyCoords());
+		var noMoreWrought = false;
+		for (var i = 0; i < metalChests.objectsCount; i++)
+		{
+			metalChests.Goto(i);
+			var toTransfer = GetInvFree();
+			var transferred = metalChests.GetMetal(metalChests.wrought, GetInvFree());
+			if (toTransfer == transferred) break;
+			if (i+1 == metalChests.objectsCount) noMoreWrought = true; 
+		}
+
+		// put wrought to crucibles
+		cruciblesRowsLoop:
+		for (var r = rowDone+1; r < crucibles.waypoints.length; r++)
+		{
+			TeleportHF();
+			crucibles.GotoRow(r, jMyCoords());
+			for (var i = 0; i < crucibles.objectsCount; i++)
+			{
+				crucibles.Goto(i);
+				var toTransfer = GetInvResCount(metalChests.wrought);
+				var transferred = crucibles.PutWrought(toTransfer);
+				if (toTransfer == transferred) break cruciblesRowsLoop;
+			}
+			rowDone = r;
+			if (r+1 == crucibles.waypoints.length)
+			{
+				jPrint("wrought loaded");
+				break wroughtToCruciblesLoop; // no more space in crucibles (ok)
+			}
+		}
+		if (noMoreWrought)
+		{
+			allOk = false;
+			jPrint("not enough wrought");
+			break wroughtToCruciblesLoop; // no more wrought in chests (error)
+		}
+	}
+  // put excess wrought back to metal chests
+	if (GetInvResCount(metalChests.wrought) > 0)
+	{
+		TeleportHF();
+		metalChests.GotoRow(0, jMyCoords());
+		for (var i = 0; i < metalChests.objectsCount; i++)
+		{
+			metalChests.Goto(i);
+			var toTransfer = GetInvResCount(metalChests.wrought);
+			var transferred = metalChests.PutMetal(metalChests.wrought, toTransfer);
+			if (toTransfer == transferred) break;
+		}
+	}
+
+	var rowDone = -1;
+	coalToCruciblesLoop:
+	while (true)
+	{
+		// take coal
+		var noMoreCoal = (!GetCoal(GetInvFree()));
+
+		// put wrought to crucibles
+		cruciblesRowsLoop:
+		for (var r = rowDone+1; r < crucibles.waypoints.length; r++)
+		{
+			TeleportHF();
+			crucibles.GotoRow(r, jMyCoords());
+			for (var i = 0; i < crucibles.objectsCount; i++)
+			{
+				crucibles.Goto(i);
+				var toTransfer = GetInvResCount("/coal");
+				var transferred = crucibles.PutCoal(toTransfer);
+				if (toTransfer == transferred) break cruciblesRowsLoop;
+			}
+			rowDone = r;
+			if (r+1 == crucibles.waypoints.length)
+			{
+				jPrint("coal loaded");
+				break coalToCruciblesLoop; // no more space in crucibles (ok)
+			}
+		}
+		if (noMoreCoal)
+		{
+			allOk = false;
+			jPrint("not enough coal");
+			break coalToCruciblesLoop; // no more coal (error)
+		}
+	}
+	PutExcessCoal();
+
+	if (allOk)
+	{
+		jPrint("done. all wrought and coal in chests.");
+	}
+	else
+	{
+		jPrint("finished. not enough wrought or coal.");
+	}
+	TeleportHF();
+}
+
+//---------------------------------------------------------------------
+// light crucibles
+//---------------------------------------------------------------------
+function LightCrucibles()
+{
+	var crucibles = new Crucibles();
+
+	jSetSpeed(2);
+
+	for (var r = 0; r < crucibles.waypoints.length; r++)
+	{
+		for (var n = 0; n < 2; n++)
+		{
+			TeleportHF();
+			crucibles.GotoRow(r, jMyCoords());
+			for (var i = 0; i < crucibles.objectsCount; i++)
+			{
+				crucibles.Goto(i);
+				crucibles.Light();
+			}
+		}
+	} 
+}
+
+//---------------------------------------------------------------------
+function main()
+{
+	jDropLastWindow();
+
+	var modeList = ["Chop trees", "Chop blocks", "Fuel steel", "Fuel steel", "Make cast & wrought", "Make cast only", "Make wrought only", "Deliver ore", "Unload steel", "Load crucibles", "Light crucibles"];
+	var modeDesc = ["Chop trees and deliver logs to factory", "Chop logs to blocks and put it to signs", "Fuel steel", "Fuel steel every 5 hours", "Makes bloom from ore, use with Deliver ore", "Makes cast from ore, use with Deliver ore", "Makes bloom from cast", "Collects and deliver ore from mine", "Transport steel from crucibles to chests", "Load wrought and coal to crucibles", "Light all crucibles"];
+
+	var modeWnd = jGUIWindow(jCoord(250, 250), jCoord(350, 20 + modeList.length*35+30), "Steel Factory");
+	for (var n = 0; n < modeList.length; n++)
+	{
+		jGUIButton(modeWnd, jCoord(10, 10 + n*35), 120, modeList[n]);
+		jGUILabel(modeWnd, jCoord(140, 10 + n*35 + 2), modeDesc[n]);
+	}	
+	jGUIButton(modeWnd, jCoord(115, 10 + modeList.length*35 + 15), 120, "Exit");
+	modeWnd.toggleCloseButton();
+	var modeText = modeWnd.waitButtonClick();
+	modeWnd.destroy();
+	if (modeText == "Exit") return;
+
+	if (modeText == modeList[0])
+	{
+		ChopAndDeliverTrees();
+	}
+	if (modeText == modeList[1])
+	{
+		ChopToBlocks();
+	}
+	if (modeText == modeList[2])
+	{
+		FuelSteel();
+		jLogout();
+		Finish("");
+	}
+	if (modeText == modeList[3])
+	{
+		FuelSteelPeriodic();
+	}
+	if (modeText == modeList[4])
+	{
+		MakeWrought(true);
+	}
+	if (modeText == modeList[5])
+	{
+		MakeWrought(false);
+	}
+	if (modeText == modeList[6])
+	{
+		ForgeWroughtOnly();
+	}
+	if (modeText == modeList[7])
+	{
+		DeliverOre();
+	}
+	if (modeText == modeList[8])
+	{
+		UnloadCrucibles();
+	}
+	if (modeText == modeList[9])
+	{
+		LoadCrucibles();
+	}
+	if (modeText == modeList[10])
+	{
+		LightCrucibles();
+	}
+}
+
+main();

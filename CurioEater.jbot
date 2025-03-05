@@ -1,0 +1,139 @@
+//#! uniq = CURIOEATER
+//#! tooltip = Puts curios in study, drinks tea. Multiple chars.
+//#! name = Curio Eater
+//#! icon = gfx/invobjs/tinyabacus
+
+include("jBotAPI");
+
+//// Set your account and character names - ["accName", "charName"], ////////////
+var accCharNames =
+[
+	["abc", "xyz"],
+	// ...
+];
+
+//// Delay between eating, minutes
+var eatingDelay = 30;
+
+//// Curios list with priority. Upper - more priority, lower - less. ////////////
+var curioList =
+[
+	"pearl",
+	"bluebell",
+	"tinyabacus",
+	"flotsam",
+	"edelweiss",
+	"glimmermoss",
+
+	"stuffedbear",
+	"bronzesteed",
+	"entronedtoad",
+	"strawdoll",
+	"seerstealeaves",
+
+	"ants-empress",
+	"ants-queen",
+	"ants-soldiers",
+	"emerald",
+
+	"itsyweb",
+	"bloatedbolete",
+	"frogscrown",
+	"toadstool",
+	"conecow",
+	"barkboat",
+	"stalagoom",
+
+	"ladysmantle",
+	"seersbowl",
+	"tinsoldier",
+];
+
+
+function InsertCurio()
+{
+	if(!jHaveWindow("Character Sheet"))
+	{
+		jToggleSheet();
+		while (!jHaveWindow("Character Sheet"))
+		{
+			jSleep(100);
+		}
+	}
+
+	for (var n = 0; n < curioList.length; n++)
+	{
+		var items = checkInventory().getItems(curioList[n]);
+
+		var quality = -1;
+		var num = -1;
+		for (var i = 0; i < items.length; i++)
+		{
+			if (items[i].quality() > quality)
+			{
+				quality = items[i].quality();
+				num = i;
+			}
+		}
+		if (num == -1) continue;
+
+		var curio = items[num];
+		curio.transfer();
+		jSleep(200);
+	}
+
+	jSleep(15*1000);
+}
+
+function DrinkTea()
+{
+	var needDrink = false;
+	var buffs = jGetBuffs();
+	for (i = 0; i < buffs.length; i++)
+	{
+		jPrint(buffs[i].name());
+		if (buffs[i].name() == "The Warmth of Tea")
+		{
+			needDrink = (buffs[i].time() < 20);
+			break;
+		}
+	}
+	if (!needDrink) return;
+
+	var flasks = checkInventory().getItems("mug-hot");
+	if (flasks.length > 0)
+	{
+		var flask = flasks[0];
+		if (flask.isActual())
+		{
+			flask.iact();
+			if (jWaitPopup(actionTimeout))
+			{
+				jSelectContextMenu("Drink");
+				jWaitProgress();
+			}
+		}
+	}
+}
+ 
+function main()
+{
+	jLogout();
+	jSleep(5*1000);
+
+	while (true)
+	{
+		for (var i = 0; i < accCharNames.length; i++)
+		{
+			Login(accCharNames[i][0], accCharNames[i][1]);
+
+			InsertCurio();
+			DrinkTea();
+
+			jLogout();
+		}
+		jSleep(eatingDelay*60*1000);
+	}
+}
+
+main();

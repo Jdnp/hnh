@@ -1,0 +1,64 @@
+//#! tooltip = Gather milk from cows
+//#! name = Milk gatherer
+//#! uniq = MILKGATHERERBOT
+//#! icon = gfx/invobjs/bucket-milk
+
+include("jBotAPI");
+
+var offset = jCoord(0, 0);
+var exit = false;
+
+function makeMenu() {
+	var blist = ["Север", "Юг", "Запад", "Восток", "Выход"];
+	var selectWindow = jGUIWindow(jCoord(250, 250), jCoord(215, 140), "Cows");
+	var label = jGUILabel(selectWindow, jCoord(65, 5), "Подходить к коровам с...");
+	jGUIButton(selectWindow, jCoord(55, 25),  100, blist[0]);  // N
+	jGUIButton(selectWindow, jCoord(55, 75),  100, blist[1]);  // S
+	jGUIButton(selectWindow, jCoord(5, 50),  100, blist[2]);   // W
+	jGUIButton(selectWindow, jCoord(110, 50),  100, blist[3]); // E
+	jGUIButton(selectWindow, jCoord(55, 110),  100, blist[4]); // Exit
+	selectWindow.toggleCloseButton();
+	var btext = selectWindow.waitButtonClick();
+	if(btext == blist[0]) {offset = jCoord(0, -11);}
+	if(btext == blist[1]) {offset = jCoord(0, 11); }
+	if(btext == blist[2]) {offset = jCoord(-11, 0);}
+	if(btext == blist[3]) {offset = jCoord(11, 0); }
+	if(btext == blist[4]) exit = true;
+	selectWindow.destroy();
+}
+
+function main() {
+	jDropLastWindow();
+	makeMenu();
+	if(exit) return;
+	var cows = [];
+	while(1) {
+		var cow = jSelectObject("Select cow...");
+		if(cow == null) break;
+		var name = cow.name();
+		if(name.indexOf("/cow/") != -1) {
+			cows.push(cow);
+			jToConsole("Cows count: " + cows.length);
+		}
+		else break;
+	}//cows
+	var inv = checkInventory();
+	for(var i = 0; i < cows.length; i++) {
+		var pos = cows[i].position();
+		pos = pos.add(offset);
+		jAbsClick(pos, 1, 0);
+		jWaitMove(actionTimeout);
+		var buckets = inv.getItems("buckete");
+		if(buckets.length < 1)
+			break;
+		var bc = buckets[0].coord();
+		buckets[0].take();
+		jWaitDrag(actionTimeout);
+		jObjectInteractClick(cows[i].getID(), 0);
+		jWaitProgress(20000);
+		inv.drop(bc);
+		jWaitDrop(actionTimeout);
+	}//for
+}
+
+main();
